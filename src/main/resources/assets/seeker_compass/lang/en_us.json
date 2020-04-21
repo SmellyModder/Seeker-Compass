@@ -1,0 +1,12 @@
+{
+	"item.seeker_compass.seeker_compass": "Seeker Compass",
+	
+	"tooltip.seeker_compass.tracking_entity": "Tracking Entity: ",
+	"tooltip.seeker_compass.entity_type": "  Entity Type: ",
+	"tooltip.seeker_compass.entity_name": "  Entity Name: ",
+	"tooltip.seeker_compass.alive": "  Alive: ",
+	"tooltip.seeker_compass.health": "  Health: ",
+	
+	"advancement.adventure.eye_see_you.title": "Eye See You",
+	"advancement.adventure.eye_see_you.description": "Find a Seeker Compass"
+}

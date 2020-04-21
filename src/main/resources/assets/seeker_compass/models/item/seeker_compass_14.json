@@ -1,0 +1,6 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "seeker_compass:item/seeker_compass_14"
+    }
+}

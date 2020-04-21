@@ -1,0 +1,17 @@
+modLoader="javafml"
+loaderVersion="[28,)"
+issueTrackerURL="https://github.com/SmellyModder/Seeker-Compass/issues"
+
+[[mods]]
+    modId="seeker_compass"
+    namespace="seeker_compass"
+    version="1.0"
+    displayName="Seeker Compass"
+    authors="SmellyModder(Luke Tonon), Five/Paradiscal"
+    description='''A mod that adds a new compass used to track entities, even players'''
+    displayURL=""
+    [[dependencies.seeker_compass]]
+        modId="forge"
+        mandatory=true
+        versionRange="[${forge_version},)"
+        ordering="NONE"

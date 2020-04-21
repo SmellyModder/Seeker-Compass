@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:adventure/root",
+  "display": {
+    "icon": {
+      "item": "seeker_compass:seeker_compass"
+    },
+    "title": {
+      "translate": "advancement.adventure.eye_see_you.title"
+    },
+    "description": {
+      "translate": "advancement.adventure.eye_see_you.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "seeker_compass": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "seeker_compass:seeker_compass"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "seeker_compass"
+    ]
+  ]
+}
