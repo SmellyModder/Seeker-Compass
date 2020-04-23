@@ -10,19 +10,25 @@ import javax.annotation.Nullable;
 
 import com.mojang.datafixers.util.Pair;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
@@ -30,10 +36,9 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceContext.FluidMode;
-import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -45,8 +50,12 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.PacketDistributor;
+import smelly.seekercompass.advancements.SCCriteriaTriggers;
 import smelly.seekercompass.enchants.SCEnchants;
 
+/**
+ * @author SmellyModder(Luke Tonon)
+ */
 public class SeekerCompassItem extends Item {
 
 	public SeekerCompassItem(Properties properties) {
@@ -74,7 +83,7 @@ public class SeekerCompassItem extends Item {
 						}
 						
 						if(stack.hasTag() && stack.getTag().contains("Rotations") && stack.getTag().contains("EntityStatus") && !stack.isOnItemFrame()) {
-							return (float) MathHelper.positiveModulo(SeekerCompassItem.getRotationData(stack).rotation, 1.0F);
+							return (float) positiveModulo(SeekerCompassItem.getRotationData(stack).rotation, 1.0F);
 						} else {
 							double randRotation = Math.random();
 							
@@ -82,7 +91,7 @@ public class SeekerCompassItem extends Item {
 								randRotation = this.wobble(world, randRotation);
 							}
 
-							return MathHelper.positiveModulo((float) randRotation, 1.0F);
+							return (float) positiveModulo((float) randRotation, 1.0F);
 						}
 					}
 				}
@@ -93,10 +102,10 @@ public class SeekerCompassItem extends Item {
 				if(world.getGameTime() != this.lastUpdateTick) {
 					this.lastUpdateTick = world.getGameTime();
 					double d0 = rotation - this.rotation;
-					d0 = MathHelper.positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
+					d0 = positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
 					this.rota += d0 * 0.1D;
 					this.rota *= 0.8D;
-					this.rotation = MathHelper.positiveModulo(this.rotation + this.rota, 1.0D);
+					this.rotation = positiveModulo(this.rotation + this.rota, 1.0D);
 				}
 
 				return this.rotation;
@@ -106,6 +115,10 @@ public class SeekerCompassItem extends Item {
 		this.addPropertyOverride(new ResourceLocation("broken"), (stack, world, entity) -> {
 			return isNotBroken(stack) ? 0.0F : 1.0F;
 		});
+	}
+	
+	public static double positiveModulo(double numerator, double denominator) {
+		return (numerator % denominator + denominator) % denominator;
 	}
 	
 	public static boolean isNotBroken(ItemStack stack) {
@@ -124,6 +137,14 @@ public class SeekerCompassItem extends Item {
 		return RotationData.read(stack.getTag().getCompound("Rotations"));
 	}
 	
+	private static VoodooData getVoodooData(ItemStack stack) {
+		return VoodooData.read(stack.getTag().getCompound("VoodooInfo"));
+	}
+	
+	public boolean hasVoodooCooldown(ItemStack stack) {
+		return stack.hasTag() && stack.getTag().contains("VoodooInfo") ? getVoodooData(stack).timer > 0 : false;
+	}
+	
 	private double getAngleToTrackedEntity(ItemStack stack, Entity entity) {
 		EntityStatusData data = EntityStatusData.read((CompoundNBT) stack.getTag().get("EntityStatus"));
 		BlockPos pos = data.pos;
@@ -138,10 +159,10 @@ public class SeekerCompassItem extends Item {
 		if(world.getGameTime() != lastUpdateTick) {
 			lastUpdateTick = world.getGameTime();
 			double d0 = angle - rotation;
-			d0 = MathHelper.positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
+			d0 = positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
 			rota += d0 * 0.1D;
 			rota *= 0.8D;
-			rotation = MathHelper.positiveModulo(rotation + rota, 1.0D);
+			rotation = positiveModulo(rotation + rota, 1.0D);
 		}
 
 		return Pair.of(lastUpdateTick, new double[] {rotation, rota});
@@ -150,20 +171,45 @@ public class SeekerCompassItem extends Item {
 	@Override
 	public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
 		if(!world.isRemote && isNotBroken(stack)) {
-			if(world.getGameTime() % 20 == 0 && entity instanceof PlayerEntity) {
+			CompoundNBT tag = stack.getTag();
+			
+			if(world.getGameTime() % 20 == 0 && entity instanceof PlayerEntity && tag != null && tag.contains("TrackingEntity")) {
 				PlayerEntity player = (PlayerEntity) entity;
 				stack.damageItem(1, player, (living) -> {
 					living.sendBreakAnimation(player.getActiveHand());
 				});
 			}
 			
-			CompoundNBT tag = stack.getTag();
+			if(tag != null && tag.contains("VoodooInfo")) {
+				VoodooData data = getVoodooData(stack);
+				if(data.timer > 0) {
+					tag.put("VoodooInfo", VoodooData.write(new VoodooData(data.timesUsed, data.timer - 1)));
+				} else {
+					if(data.timesUsed >= 9) {
+						tag.put("VoodooInfo", VoodooData.write(new VoodooData(0, 0)));
+					}
+				}
+			}
+			
 			if(tag != null && tag.contains("TrackingEntity")) {
 				Entity trackingEntity = this.getEntity((ServerWorld) world, stack);
 				if(trackingEntity != null) {
 					tag.put("EntityStatus", EntityStatusData.write(trackingEntity));
+					
+					trackingEntity.getPersistentData().putBoolean(SCEvents.TAG_CHUNK_UPDATE, true);
+					trackingEntity.getPersistentData().putInt(SCEvents.TAG_CHUNK_TIMER, 20);
+					
+					if(EnchantmentHelper.getEnchantmentLevel(SCEnchants.PERSISTENCE.get(), stack) > 0 && trackingEntity instanceof MobEntity) {
+						((MobEntity) trackingEntity).enablePersistence();
+					}
 				} else if(tag.contains("EntityStatus")) {
-					tag.put("EntityStatus", EntityStatusData.writeMissingEntity(EntityStatusData.read((CompoundNBT) tag.get("EntityStatus"))));
+					EntityStatusData data = EntityStatusData.read((CompoundNBT) tag.get("EntityStatus"));
+					ChunkPos chunkpos = new ChunkPos(data.pos);
+					if(!SCEvents.isChunkForced((ServerWorld) world, chunkpos)) {
+						world.getChunkProvider().forceChunk(chunkpos, false);
+					}
+					
+					tag.put("EntityStatus", EntityStatusData.writeMissingEntity(data));
 				}
 				
 				if(tag.contains("Rotations")) {
@@ -172,7 +218,7 @@ public class SeekerCompassItem extends Item {
 					double turn;
 					if(stack.hasTag() && stack.getTag().contains("EntityStatus") && SeekerCompassItem.getEntityStatus(stack).canTrackEntity(entity.dimension)) {
 						double yaw = (double) entity.rotationYaw;
-						yaw = MathHelper.positiveModulo(yaw / 360.0D, 1.0D);
+						yaw = positiveModulo(yaw / 360.0D, 1.0D);
 						double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float)Math.PI * 2F);
 						turn = 0.5D - (yaw - 0.25D - angle);
 					} else {
@@ -189,7 +235,7 @@ public class SeekerCompassItem extends Item {
 					double turn;
 					if(stack.hasTag() && stack.getTag().contains("EntityStatus") && SeekerCompassItem.getEntityStatus(stack).canTrackEntity(entity.dimension)) {
 						double yaw = (double) entity.rotationYaw;
-						yaw = MathHelper.positiveModulo(yaw / 360.0D, 1.0D);
+						yaw = positiveModulo(yaw / 360.0D, 1.0D);
 						double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float)Math.PI * 2F);
 						turn = 0.5D - (yaw - 0.25D - angle);
 					} else {
@@ -213,7 +259,7 @@ public class SeekerCompassItem extends Item {
 			
 			tooltip.add(new TranslationTextComponent("tooltip.seeker_compass.tracking_entity"));
 			
-			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_type").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(status.entityType)));
+			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_type").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(I18n.format(status.entityType))));
 			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_name").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(status.entityName)));
 			
 			boolean alive = status.isAlive;
@@ -226,7 +272,7 @@ public class SeekerCompassItem extends Item {
 			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.health").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(String.valueOf(status.health)).applyTextStyle(TextFormatting.GREEN)));
 		
 			if(EnchantmentHelper.getEnchantmentLevel(SCEnchants.TRACKING.get(), stack) > 0) {
-				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.blockpos").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(status.pos.toString())));
+				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.blockpos").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(status.pos.func_229422_x_())));
 				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.standing_on").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(I18n.format(world.getBlockState(status.pos.down()).getBlock().getTranslationKey()))));
 				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.biome").applyTextStyle(TextFormatting.GRAY)).appendSibling(new StringTextComponent(I18n.format(world.getBiome(status.pos).getTranslationKey()))));
 			}
@@ -236,36 +282,139 @@ public class SeekerCompassItem extends Item {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
 		ItemStack stack = player.getHeldItem(hand);
-		if(isNotBroken(stack) && stack.hasTag() && stack.getTag().contains("TrackingEntity") && player.isShiftKeyDown() && rayTrace(world, player, FluidMode.NONE).getType() != Type.ENTITY) {
+		if(isNotBroken(stack) && stack.hasTag() && stack.getTag().contains("TrackingEntity") && player.isShiftKeyDown()) {
 			int level = EnchantmentHelper.getEnchantmentLevel(SCEnchants.VOODOO.get(), stack);
 			if(level > 0 && !getTargetEntity(player, 8).isPresent()) {
+				if(this.hasVoodooCooldown(stack) && !player.isCreative()) {
+					if(!world.isRemote) {
+						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").appendSibling((new StringTextComponent(String.valueOf(getVoodooData(stack).timer)).applyTextStyle(TextFormatting.GOLD))));
+					}
+					return ActionResult.resultFail(stack);
+				}
+				
 				if(world instanceof ServerWorld) {
 					Entity entity = this.getEntity((ServerWorld) world, stack);
 					if(entity != null) {
-						entity.attackEntityFrom(DamageSource.causePlayerDamage(player).setDamageBypassesArmor().setMagicDamage(), 1 + level);
-				
-						Random rand = player.getRNG();
-						for(int i = 0; i < 8; i++) {
-							Vec3d targetPosition = entity.getPositionVec();
-							Vec3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, entity.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
-							Vec3d motion = position.subtract(targetPosition.add(0.0F, entity.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
-						
-							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", position.getX(), position.getY(), position.getZ(), motion.getX(), motion.getY(), motion.getZ()));
-						}
-						if(!player.isCreative()) {
-							int damage = MathHelper.clamp(stack.getDamage() + 400, 0, stack.getMaxDamage() - 1);
-							stack.setDamage(damage);
+						if(entity.attackEntityFrom(DamageSource.causePlayerDamage(player).setDamageBypassesArmor().setMagicDamage(), 1 + level)) {
+							SCCriteriaTriggers.VOODOO_MAGIC.trigger((ServerPlayerEntity) player);
 							
-							if(damage == stack.getMaxDamage() - 1) {
-								player.playSound(SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							Random rand = player.getRNG();
+							for(int i = 0; i < 8; i++) {
+								Vec3d targetPosition = entity.getPositionVec();
+								Vec3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, entity.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
+								Vec3d motion = position.subtract(targetPosition.add(0.0F, entity.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
+							
+								SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", position.getX(), position.getY(), position.getZ(), motion.getX(), motion.getY(), motion.getZ()));
+							}
+							
+							if(!player.isCreative()) {
+								int damage = MathHelper.clamp(stack.getDamage() + 400, 0, stack.getMaxDamage() - 1);
+								stack.setDamage(damage);
+								
+								if(damage == stack.getMaxDamage() - 1) {
+									player.playSound(SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS, 0.5F, 1.5F);
+								}
+								
+								VoodooData data = getVoodooData(stack);
+								int newTimesUsed = data.timesUsed + 1;
+								if(newTimesUsed >= 9) {
+									stack.getTag().put("VoodooInfo", VoodooData.write(new VoodooData(9, 12000)));
+								} else {
+									stack.getTag().put("VoodooInfo", VoodooData.write(new VoodooData(newTimesUsed, 0)));
+								}
 							}
 						}
 					}
 				}
-				return ActionResult.resultSuccess(stack);
+				return ActionResult.resultConsume(stack);
+			} else if(EnchantmentHelper.getEnchantmentLevel(SCEnchants.WARPING.get(), stack) > 0 && !getTargetEntity(player, 8).isPresent()) {
+				if(world instanceof ServerWorld) {
+					Entity entity = getEntity((ServerWorld) world, stack);
+					
+					if(entity != null) {
+						Vec3d pos = entity.getPositionVec();
+						
+						if(player.attemptTeleport(pos.getX(), pos.getY(), pos.getZ(), false)) {
+							world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+							pos = player.getPositionVec();
+							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", pos.getX(), pos.getY(), pos.getZ(), 0.0F, 0.0F, 0.0F));
+							stack.shrink(1);
+							
+							return ActionResult.resultSuccess(stack);
+						}
+					}
+				}
 			}
 		}
 		return super.onItemRightClick(world, player, hand);
+	}
+	
+	@Override
+	public ActionResultType onItemUse(ItemUseContext context) {
+		ItemStack stack = context.getItem();
+		PlayerEntity player = context.getPlayer();
+		World world = context.getWorld();
+		BlockPos placingPos = context.getPos().up();
+		if(isNotBroken(stack) && EnchantmentHelper.getEnchantmentLevel(SCEnchants.SUMMONING.get(), stack) > 0 && stack.hasTag() && stack.getTag().contains("TrackingEntity") && player.isShiftKeyDown()) {
+			if(world instanceof ServerWorld) {
+				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
+				if(trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.contains(trackedEntity.getType())) {
+					if(((LivingEntity) trackedEntity).attemptTeleport(placingPos.getX(), placingPos.getY(), placingPos.getZ(), false)) {
+						world.playSound(null, placingPos.getX(), placingPos.getY(), placingPos.getZ(), SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", placingPos.getX(), placingPos.getY(), placingPos.getZ(), 0.0F, 0.0F, 0.0F));
+						
+						if(!player.isCreative()) {
+							int damage = MathHelper.clamp(stack.getDamage() + 300, 0, stack.getMaxDamage() - 1);
+							stack.setDamage(damage);
+						
+							if(damage == stack.getMaxDamage() - 1) {
+								player.playSound(SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS, 0.5F, 1.5F);
+							}
+						}
+						return ActionResultType.SUCCESS;
+					}
+				}
+			}
+		} else if(!stack.hasTag() || stack.hasTag() && !stack.getTag().contains("TrackingEntity")) {
+			boolean creative = player.isCreative();
+			if(world.getBlockState(placingPos.down()).getBlock() == Blocks.OBSIDIAN && (player.experienceLevel >= 10 || creative)) {
+				if(!creative) {
+					player.experienceLevel -= 10;
+				}
+				
+				world.playSound(null, placingPos.getX(), placingPos.getY(), placingPos.getZ(), SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.75F, 1.0F);
+				
+				if(world instanceof ServerWorld) {
+					SCCriteriaTriggers.JOHN_CENA.trigger((ServerPlayerEntity) player);
+					
+					for(ServerPlayerEntity players : ((ServerWorld) world).getPlayers()) {
+						for(int i = 0; i < players.inventory.getSizeInventory(); i++) {
+							ItemStack itemstack = players.inventory.getStackInSlot(i);
+							if(!itemstack.isEmpty() && itemstack.getItem() == this && itemstack.hasTag() && itemstack.getTag().contains("TrackingEntity")) {
+								if(player == this.getEntity((ServerWorld) world, itemstack) && this.getEntity((ServerWorld) world, itemstack) != null) {
+									itemstack.getTag().remove("TrackingEntity");
+									itemstack.getTag().remove("EntityStatus");
+									itemstack.getTag().remove("Rotations");
+									
+									Random rand = player.getRNG();
+									for(int i2 = 0; i2 < 8; i2++) {
+										Vec3d targetPosition = players.getPositionVec();
+										Vec3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, players.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
+										Vec3d motion = targetPosition.subtract(position.add(0.0F, players.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
+										
+										SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", targetPosition.getX(), targetPosition.getY(), targetPosition.getZ(), motion.getX(), motion.getY(), motion.getZ()));
+									}
+									player.world.playSound(null, players.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
+								}
+							}
+						}
+					}
+				}
+				
+				stack.shrink(1);
+			}
+		}
+		return super.onItemUse(context);
 	}
 	
 	@Override
@@ -379,7 +528,7 @@ public class SeekerCompassItem extends Item {
 		public static CompoundNBT write(Entity trackingEntity) {
 			CompoundNBT tag = new CompoundNBT();
 			tag.putBoolean("Alive", trackingEntity.isAlive());
-			tag.putString("EntityType", I18n.format(trackingEntity.getType().getTranslationKey()));
+			tag.putString("EntityType", trackingEntity.getType().getTranslationKey());
 			tag.putString("EntityName", trackingEntity.getName().getString());
 			
 			if(trackingEntity instanceof LivingEntity) {
@@ -422,6 +571,27 @@ public class SeekerCompassItem extends Item {
 			tag.putDouble("Rotation", data.rotation);
 			tag.putDouble("Rota", data.rota);
 			tag.putLong("LastUpdateTick", data.lastUpdateTick);
+			return tag;
+		}
+	}
+	
+	static class VoodooData {
+		public final int timesUsed;
+		public final int timer;
+		
+		public VoodooData(int timesUsed, int timer) {
+			this.timer = timer;
+			this.timesUsed = timesUsed;
+		}
+		
+		public static VoodooData read(CompoundNBT compound) {
+			return new VoodooData(compound.getInt("TimesUsed"), compound.getInt("Timer"));
+		}
+		
+		public static CompoundNBT write(VoodooData data) {
+			CompoundNBT tag = new CompoundNBT();
+			tag.putInt("TimesUsed", data.timesUsed);
+			tag.putInt("Timer", data.timer);
 			return tag;
 		}
 	}

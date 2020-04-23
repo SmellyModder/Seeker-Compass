@@ -2,6 +2,10 @@
 	"item.seeker_compass.seeker_compass": "Seeker Compass",
 	
 	"enchantment.seeker_compass.voodoo": "Voodoo",
+	"enchantment.seeker_compass.tracking": "Tracking",
+	"enchantment.seeker_compass.warping": "Warping",
+	"enchantment.seeker_compass.summoning": "Summoning",
+	"enchantment.seeker_compass.persistence": "Persistence",
 	
 	"tooltip.seeker_compass.tracking_entity": "Tracking Entity: ",
 	"tooltip.seeker_compass.entity_type": "  Entity Type: ",
@@ -12,6 +16,12 @@
 	"tooltip.seeker_compass.standing_on": "  Standing on: ",
 	"tooltip.seeker_compass.biome": "  Biome: ",
 	
+	"message.seeker_compass.voodoo_cooldown": "Voodoo Cooldown Active! Ticks Remaining: ",
+	
 	"advancement.adventure.eye_see_you.title": "Eye See You",
-	"advancement.adventure.eye_see_you.description": "Find a Seeker Compass"
+	"advancement.adventure.eye_see_you.description": "Find a Seeker Compass",
+	"advancement.seeker_compass.john_cena.title": "You Can't See Me!",
+	"advancement.seeker_compass.john_cena.description": "Perform an unbinding ritual by sacrificing xp and your compass to a block of obsidian",
+	"advancement.seeker_compass.voodoo_magic.title": "Voodoo Magic",
+	"advancement.seeker_compass.voodoo_magic.description": "Use Voodoo to remotely damage an entity with the Seeker Compass"
 }

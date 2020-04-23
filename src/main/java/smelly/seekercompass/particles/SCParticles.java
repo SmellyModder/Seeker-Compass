@@ -1,6 +1,7 @@
 package smelly.seekercompass.particles;
 
 import net.minecraft.client.Minecraft;
+
 import net.minecraft.particles.BasicParticleType;
 import net.minecraft.particles.ParticleType;
 import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
@@ -11,8 +12,12 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import smelly.seekercompass.SeekerCompass;
 
+/**
+ * @author SmellyModder(Luke Tonon)
+ */
 public class SCParticles {
 	public static final BasicParticleType SEEKER_EYES = createBasicParticleType(true, "seeker_eyes");
+	public static final BasicParticleType SEEKER_WARP = createBasicParticleType(true, "seeker_warp");
 	
 	private static BasicParticleType createBasicParticleType(boolean alwaysShow, String name) {
 		BasicParticleType particleType = new BasicParticleType(alwaysShow);
@@ -26,7 +31,7 @@ public class SCParticles {
 		@SubscribeEvent
 		public static void registerParticleTypes(RegistryEvent.Register<ParticleType<?>> event) {
 			event.getRegistry().registerAll(
-				SEEKER_EYES
+				SEEKER_EYES, SEEKER_WARP
 			);
 		}
 		
@@ -39,6 +44,7 @@ public class SCParticles {
 		public static void registerParticleTypes(ParticleFactoryRegisterEvent event) {
 			Minecraft MC = Minecraft.getInstance();
 			MC.particles.registerFactory(SEEKER_EYES, SeekerEyesParticle.Factory::new);
+			MC.particles.registerFactory(SEEKER_WARP, SeekerWarpParticle.Factory::new);
 		}
 		
 	}

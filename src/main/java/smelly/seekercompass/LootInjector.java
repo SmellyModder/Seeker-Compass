@@ -13,6 +13,9 @@ import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+/**
+ * @author SmellyModder(Luke Tonon)
+ */
 @Mod.EventBusSubscriber(modid = SeekerCompass.MOD_ID)
 public class LootInjector {
 	private static final Set<ResourceLocation> NETHER_FORTRESS_INJECTION = Sets.newHashSet(LootTables.CHESTS_NETHER_BRIDGE);

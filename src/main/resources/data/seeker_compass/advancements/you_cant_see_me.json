@@ -1,0 +1,23 @@
+{
+  "parent": "seeker_compass:eye_see_you",
+  "display": {
+    "icon": {
+      "item": "seeker_compass:seeker_compass"
+    },
+    "title": {
+      "translate": "advancement.seeker_compass.john_cena.title"
+    },
+    "description": {
+      "translate": "advancement.seeker_compass.john_cena.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "ritual": {
+      "trigger": "seeker_compass:john_cena"
+    }
+  }
+}

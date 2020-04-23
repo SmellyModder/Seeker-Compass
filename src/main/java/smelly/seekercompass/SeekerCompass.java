@@ -1,13 +1,18 @@
 package smelly.seekercompass;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Rarity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
@@ -19,6 +24,9 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import smelly.seekercompass.enchants.SCEnchants;
 
+/**
+ * @author SmellyModder(Luke Tonon)
+ */
 @Mod(value = SeekerCompass.MOD_ID)
 public class SeekerCompass {
 	public static final String MOD_ID = "seeker_compass";
@@ -47,8 +55,19 @@ public class SeekerCompass {
 		ITEMS.register(modEventBus);
 		SCEnchants.ENCHANTMENTS.register(modEventBus);
 		
-		modEventBus.addListener(EventPriority.LOWEST, this::setupCommon);
+		modEventBus.addListener(this::setupCommon);
 	}
 	
-	void setupCommon(final FMLCommonSetupEvent event) {}
+	void setupCommon(final FMLCommonSetupEvent event) {
+		ItemGroup.TOOLS.setRelevantEnchantmentTypes(add(ItemGroup.TOOLS.getRelevantEnchantmentTypes(), SCEnchants.SEEKER_COMPASS));
+	}
+	
+	public static EnchantmentType[] add(EnchantmentType[] array, EnchantmentType element) {
+		EnchantmentType[] newArray = array;
+		int arrayLength = Array.getLength(newArray);
+		Object newArrayObject = Array.newInstance(newArray.getClass().getComponentType(), arrayLength + 1);
+		System.arraycopy(array, 0, newArrayObject, 0, arrayLength);
+		newArray[newArray.length - 1] = element;
+		return newArray;
+	}
 }

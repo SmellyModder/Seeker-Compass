@@ -1,19 +1,19 @@
 package smelly.seekercompass.enchants;
 
-public class TrackingEnchant extends SeekerCompassEnchant {
+public class PersistenceEnchantment extends SeekerCompassEnchant {
 
-	public TrackingEnchant() {
-		super(Rarity.UNCOMMON);
+	public PersistenceEnchantment() {
+		super(Rarity.VERY_RARE);
 	}
 	
 	@Override
 	public int getMinEnchantability(int enchantmentLevel) {
-		return 10;
+		return 30;
 	}
-
+	
 	@Override
 	public int getMaxEnchantability(int enchantmentLevel) {
-		return 30;
+		return 60;
 	}
 
 }

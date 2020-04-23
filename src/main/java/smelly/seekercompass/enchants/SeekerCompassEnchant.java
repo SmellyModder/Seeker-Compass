@@ -3,6 +3,9 @@ package smelly.seekercompass.enchants;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.inventory.EquipmentSlotType;
 
+/**
+ * @author SmellyModder(Luke Tonon)
+ */
 public abstract class SeekerCompassEnchant extends Enchantment {
 
 	public SeekerCompassEnchant(Rarity rarityIn) {

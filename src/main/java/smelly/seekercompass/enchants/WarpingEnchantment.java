@@ -6,30 +6,25 @@ import net.minecraft.enchantment.MendingEnchantment;
 /**
  * @author SmellyModder(Luke Tonon)
  */
-public class VoodooEnchantment extends SeekerCompassEnchant {
+public class WarpingEnchantment extends SeekerCompassEnchant {
 
-	public VoodooEnchantment() {
-		super(Rarity.RARE);
+	public WarpingEnchantment() {
+		super(Rarity.VERY_RARE);
 	}
 	
 	@Override
 	public int getMinEnchantability(int enchantmentLevel) {
-		return 20;
+		return 40;
 	}
-	
+
 	@Override
 	public int getMaxEnchantability(int enchantmentLevel) {
 		return 60;
 	}
 	
 	@Override
-	public int getMaxLevel() {
-		return 3;
-	}
-	
-	@Override
-	public boolean canApplyTogether(Enchantment ench) {
-		return (ench instanceof MendingEnchantment || ench instanceof WarpingEnchantment) ? false : super.canApplyTogether(ench);
+	protected boolean canApplyTogether(Enchantment ench) {
+		return !(ench instanceof VoodooEnchantment || ench instanceof MendingEnchantment) && super.canApplyTogether(ench);
 	}
 
 }
