@@ -1,7 +1,6 @@
 package smelly.seekercompass.enchants;
 
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.MendingEnchantment;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -24,7 +23,7 @@ public class WarpingEnchantment extends SeekerCompassEnchant {
 	
 	@Override
 	protected boolean canApplyTogether(Enchantment ench) {
-		return !(ench instanceof VoodooEnchantment || ench instanceof MendingEnchantment) && super.canApplyTogether(ench);
+		return (ench instanceof VoodooEnchantment || ench instanceof SummoningEnchantment) ? false : super.canApplyTogether(ench);
 	}
 
 }

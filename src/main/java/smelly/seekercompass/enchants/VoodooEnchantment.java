@@ -29,7 +29,7 @@ public class VoodooEnchantment extends SeekerCompassEnchant {
 	
 	@Override
 	public boolean canApplyTogether(Enchantment ench) {
-		return (ench instanceof MendingEnchantment || ench instanceof WarpingEnchantment) ? false : super.canApplyTogether(ench);
+		return (ench instanceof MendingEnchantment || ench instanceof WarpingEnchantment || ench instanceof SummoningEnchantment) ? false : super.canApplyTogether(ench);
 	}
 
 }
