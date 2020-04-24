@@ -10,7 +10,7 @@
 	"tooltip.seeker_compass.tracking_entity": "Tracking Entity: ",
 	"tooltip.seeker_compass.entity_type": "  Entity Type: ",
 	"tooltip.seeker_compass.entity_name": "  Entity Name: ",
-	"tooltip.seeker_compass.alive": "  Alive: ",
+	"tooltip.seeker_compass.alive": "  Alive/Loaded: ",
 	"tooltip.seeker_compass.health": "  Health: ",
 	"tooltip.seeker_compass.blockpos": "  Position: ",
 	"tooltip.seeker_compass.standing_on": "  Standing on: ",

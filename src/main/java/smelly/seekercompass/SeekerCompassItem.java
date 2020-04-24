@@ -251,6 +251,7 @@ public class SeekerCompassItem extends Item {
 		}
 	}
 	
+	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void addInformation(ItemStack stack, World world, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 		CompoundNBT tag = stack.getTag();
@@ -335,6 +336,7 @@ public class SeekerCompassItem extends Item {
 						Vec3d pos = entity.getPositionVec();
 						
 						if(player.attemptTeleport(pos.getX(), pos.getY(), pos.getZ(), false)) {
+							player.fallDistance = 0.0F;
 							world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
 							pos = player.getPositionVec();
 							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", pos.getX(), pos.getY(), pos.getZ(), 0.0F, 0.0F, 0.0F));
