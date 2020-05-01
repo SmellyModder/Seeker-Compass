@@ -1,0 +1,27 @@
+{
+	"item.seeker_compass.seeker_compass": "Око искателя",
+	
+	"enchantment.seeker_compass.voodoo": "Вуду",
+	"enchantment.seeker_compass.tracking": "Отслеживание",
+	"enchantment.seeker_compass.warping": "Перемещение",
+	"enchantment.seeker_compass.summoning": "Призыв",
+	"enchantment.seeker_compass.persistence": "Постоянство",
+	
+	"tooltip.seeker_compass.tracking_entity": "Отслеживаемое существо: ",
+	"tooltip.seeker_compass.entity_type": "  Тип существа: ",
+	"tooltip.seeker_compass.entity_name": "  Навзвание существа: ",
+	"tooltip.seeker_compass.alive": "  Живой/Прогруженный: ",
+	"tooltip.seeker_compass.health": "  Здоровье: ",
+	"tooltip.seeker_compass.blockpos": "  Позиция: ",
+	"tooltip.seeker_compass.standing_on": "  Стоит на: ",
+	"tooltip.seeker_compass.biome": "  Биом: ",
+	
+	"message.seeker_compass.voodoo_cooldown": "Вуду восстанавливается! Времени осталось: ",
+	
+	"advancement.adventure.eye_see_you.title": "Око видит тебя",
+	"advancement.adventure.eye_see_you.description": "Найдите Око искателя",
+	"advancement.seeker_compass.john_cena.title": "Ты не можешь видеть меня!",
+	"advancement.seeker_compass.john_cena.description": "Выполните обязательный ритуал,пожертвовав опыт и Око искателя на блоке Обсидиана",
+	"advancement.seeker_compass.voodoo_magic.title": "Магия Вуду",
+	"advancement.seeker_compass.voodoo_magic.description": "Используйте Вуду чтобы дистанционно нанести урон сущности при помощи Око искателя"
+}
