@@ -1,0 +1,33 @@
+{
+	"item.seeker_compass.seeker_compass": "Brújula localizadora",
+	
+	"enchantment.seeker_compass.voodoo": "Vudú",
+	"enchantment.seeker_compass.tracking": "Rastreo",
+	"enchantment.seeker_compass.warping": "Distorsión",
+	"enchantment.seeker_compass.summoning": "Invocación",
+	"enchantment.seeker_compass.persistence": "Persistencia",
+	
+	"tooltip.seeker_compass.tracking_entity": "Rastreando entidad: ",
+	"tooltip.seeker_compass.entity_type": "  Tipo de la entidad: ",
+	"tooltip.seeker_compass.entity_name": "  Nombre de la entidad: ",
+	"tooltip.seeker_compass.alive": "  Entidad viva/cargada: ",
+	"tooltip.seeker_compass.health": "  Salud: ",
+	"tooltip.seeker_compass.blockpos": "  Posición: ",
+	"tooltip.seeker_compass.standing_on": "  Bloque: ",
+	"tooltip.seeker_compass.biome": "  Bioma: ",
+	
+	"message.seeker_compass.voodoo_cooldown": "¡Enfriamiento de vudú activado! Ticks restantes: ",
+	
+	"advancement.adventure.eye_see_you.title": "Te estoy viendo",
+	"advancement.adventure.eye_see_you.description": "Encontrá una brújula localizadora",
+	"advancement.seeker_compass.john_cena.title": "¡Ahora no me ves!",
+	"advancement.seeker_compass.john_cena.description": "Realizá un ritual de desvinculación sacrificando tu brújula y algo de xp a un bloque de obsidiana",
+	"advancement.seeker_compass.voodoo_magic.title": "Magia vudú",
+	"advancement.seeker_compass.voodoo_magic.description": "Usá vudú para causar daño remoto a una entidad con la brújula localizadora ",
+
+	"enchantment.seeker_compass.persistence.desc": "La entidad rastreada no podrá desaparecer.",
+	"enchantment.seeker_compass.tracking.desc": "Especifica el bloque, la posición y el bioma de la entidad rastreada.",
+	"enchantment.seeker_compass.warping.desc": "Te teletransporta hasta la entidad rastreada al utilizarlo.",
+	"enchantment.seeker_compass.summoning.desc": "Teletransporta a la entidad rastreada hasta el usuario al utilizarlo, pero solo si es invocable.",
+	"enchantment.seeker_compass.voodoo.desc": "Causa daño remoto a la entidad rastreada al utilizarlo."
+}
