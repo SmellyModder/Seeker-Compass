@@ -76,7 +76,7 @@ public class SeekerCompassItem extends Item {
 			}
 			
 			if (tag != null && tag.contains(VOODOO_TAG)) {
-				VoodooData data = getVoodooData(stack);
+				VoodooData data = getVoodooData(tag);
 				if (data.timer > 0) {
 					tag.put(VOODOO_TAG, VoodooData.write(new VoodooData(data.timesUsed, data.timer - 1)));
 				} else {
@@ -183,16 +183,16 @@ public class SeekerCompassItem extends Item {
 			int level = EnchantmentHelper.getEnchantmentLevel(SCEnchants.VOODOO.get(), stack);
 			if (level > 0 && !getTargetEntity(player, 8).isPresent()) {
 				CompoundNBT tag = stack.getTag();
-				if (tag != null && tag.contains(VOODOO_TAG) && getVoodooData(stack).timer > 0 && !player.isCreative()) {
+				if (tag != null && tag.contains(VOODOO_TAG) && getVoodooData(tag).timer > 0 && !player.isCreative()) {
 					if (!world.isRemote) {
-						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").append((new StringTextComponent(String.valueOf(getVoodooData(stack).timer)).mergeStyle(TextFormatting.GOLD))), player.getUniqueID());
+						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").append((new StringTextComponent(String.valueOf(getVoodooData(tag).timer)).mergeStyle(TextFormatting.GOLD))), player.getUniqueID());
 					}
 					return ActionResult.resultFail(stack);
 				}
 				
 				if (world instanceof ServerWorld) {
 					Entity entity = this.getEntity((ServerWorld) world, stack);
-					if (entity != null && entity.attackEntityFrom(DamageSource.causePlayerDamage(player).setDamageBypassesArmor().setMagicDamage(), 1 + level)) {
+					if (entity != null && entity.attackEntityFrom(DamageSource.causePlayerDamage(player).setDamageBypassesArmor().setMagicDamage(), 1.5F + level)) {
 						SCCriteriaTriggers.VOODOO_MAGIC.trigger((ServerPlayerEntity) player);
 							
 						Random rand = player.getRNG();
@@ -211,7 +211,7 @@ public class SeekerCompassItem extends Item {
 								player.playSound(SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS, 0.5F, 1.5F);
 							}
 								
-							VoodooData data = getVoodooData(stack);
+							VoodooData data = getVoodooData(tag);
 							int newTimesUsed = data.timesUsed + 1;
 							if (newTimesUsed >= 9) {
 								stack.getTag().put(VOODOO_TAG, VoodooData.write(new VoodooData(9, 12000)));
@@ -347,8 +347,8 @@ public class SeekerCompassItem extends Item {
 		return world.getEntityByUuid(NBTUtil.readUniqueId(stack.getTag().get(TRACKING_TAG)));
 	}
 	
-	private static VoodooData getVoodooData(ItemStack stack) {
-		return VoodooData.read(stack.getTag().getCompound(VOODOO_TAG));
+	private static VoodooData getVoodooData(CompoundNBT tag) {
+		return VoodooData.read((tag).getCompound(VOODOO_TAG));
 	}
 	
 	private double getAngleToTrackedEntity(ItemStack stack, Entity entity) {
