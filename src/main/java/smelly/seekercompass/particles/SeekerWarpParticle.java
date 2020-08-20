@@ -22,7 +22,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 @OnlyIn(Dist.CLIENT)
 public class SeekerWarpParticle extends SpriteTexturedParticle {
-	protected final IAnimatedSprite animatedSprite;
+	private final IAnimatedSprite animatedSprite;
 	private final float scale;
 
 	public SeekerWarpParticle(IAnimatedSprite animatedSprite, ClientWorld world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
@@ -78,9 +78,7 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 		super.tick();
 		this.prevParticleAngle = this.particleAngle;
 		
-		if(this.isAlive()) {
-			this.selectSpriteWithAge(this.animatedSprite);
-		}
+		if(this.isAlive()) this.selectSpriteWithAge(this.animatedSprite);
 	}
 	
 	@Override

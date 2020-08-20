@@ -4,7 +4,6 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -34,37 +33,37 @@ import net.minecraftforge.fml.network.PacketDistributor;
 @EventBusSubscriber(modid = SeekerCompass.MOD_ID)
 public class SCEvents {
 	private static final String TAG_SPAWNED = "seeker_compass:pigman_spawned";
-	public static final String TAG_POS = "seeker_compass:teleport_pos";
 	public static final String TAG_CHUNK_UPDATE = "seeker_compass:chunk_update";
 	public static final String TAG_CHUNK_TIMER = "seeker_compass:chunk_timer";
-	public static final String TAG_PREV_CHUNK = "seeker_compass:prev_chunk";
+	private static final String TAG_PREV_CHUNK = "seeker_compass:prev_chunk";
 	
 	@SubscribeEvent
 	public static void trackEntity(PlayerInteractEvent.EntityInteract event) {
-		if(event.getWorld().isRemote || event.getTarget() == null) return;
-		
 		World world = event.getWorld();
+		Entity target = event.getTarget();
+		
+		if (world.isRemote || target == null) return;
 		
 		PlayerEntity player = event.getPlayer();
-		Entity target = event.getTarget();
-		if(target instanceof LivingEntity) {
+		if (target instanceof LivingEntity) {
 			LivingEntity livingEntity = (LivingEntity) target;
-			if(livingEntity.isAlive()) {
+			if (livingEntity.isAlive()) {
 				Hand hand = event.getHand();
 				ItemStack itemstack = player.getHeldItem(hand);
 				
-				if(itemstack.getItem() == SeekerCompass.SEEKER_COMPASS.get() && SeekerCompassItem.isNotBroken(itemstack)) {
-					if(itemstack.hasTag() && itemstack.getTag().contains("TrackingEntity")) {
-						Entity entity = ((ServerWorld) world).getEntityByUuid(NBTUtil.readUniqueId(itemstack.getTag().get("TrackingEntity")));
+				if (itemstack.getItem() == SeekerCompass.SEEKER_COMPASS.get() && SeekerCompassItem.isNotBroken(itemstack)) {
+					CompoundNBT tag = itemstack.getTag();
+					if (tag != null && tag.contains("TrackingEntity")) {
+						Entity entity = ((ServerWorld) world).getEntityByUuid(NBTUtil.readUniqueId(tag.get("TrackingEntity")));
 						
-						if(entity == target) {
-							itemstack.getTag().remove("TrackingEntity");
-							itemstack.getTag().remove("EntityStatus");
-							itemstack.getTag().remove("Rotations");
+						if (entity == target) {
+							tag.remove("TrackingEntity");
+							tag.remove("EntityStatus");
+							tag.remove("Rotations");
 							player.world.playSound(null, target.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
 							
 							Random rand = player.getRNG();
-							for(int i = 0; i < 8; i++) {
+							for (int i = 0; i < 8; i++) {
 								Vector3d targetPosition = target.getPositionVec();
 								Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
 								Vector3d motion = targetPosition.subtract(position.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
@@ -81,11 +80,10 @@ public class SCEvents {
 					player.world.playSound(null, target.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 0.25F);
 					
 					Random rand = player.getRNG();
-					for(int i = 0; i < 8; i++) {
-						Vector3d targetPosition = target.getPositionVec();
+					Vector3d targetPosition = target.getPositionVec();
+					for (int i = 0; i < 8; i++) {
 						Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
 						Vector3d motion = position.subtract(targetPosition.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
-						
 						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", position.getX(), position.getY(), position.getZ(), motion.getX(), motion.getY(), motion.getZ()));
 					}
 				}
@@ -98,7 +96,7 @@ public class SCEvents {
 		if (event.getWorld().isRemote) return;
 		
 		Entity entity = event.getEntity();
-		if (entity.getType() == EntityType.ZOMBIFIED_PIGLIN) {
+		if (entity instanceof ZombifiedPiglinEntity) {
 			CompoundNBT nbt = entity.getPersistentData();
 			if (!nbt.getBoolean(TAG_SPAWNED)) {
 				ZombifiedPiglinEntity piglin = (ZombifiedPiglinEntity) entity;
@@ -135,14 +133,14 @@ public class SCEvents {
 				int timer = tag.getInt(TAG_CHUNK_TIMER);
 				if (timer > 0) {
 					world.getChunkProvider().forceChunk(chunkpos, true);
-					entity.getPersistentData().putInt(TAG_CHUNK_TIMER, timer - 1);
+					tag.putInt(TAG_CHUNK_TIMER, timer - 1);
 				} else {
 					if (!isChunkForced(world, chunkpos)) {
 						world.getChunkProvider().forceChunk(chunkpos, false);
 					}
-					entity.getPersistentData().putBoolean(TAG_CHUNK_UPDATE, false);
+					tag.putBoolean(TAG_CHUNK_UPDATE, false);
 				}
-				entity.getPersistentData().putLong(TAG_PREV_CHUNK, chunkpos.asLong());
+				tag.putLong(TAG_PREV_CHUNK, chunkpos.asLong());
 			}
 		}
 	}
@@ -154,13 +152,13 @@ public class SCEvents {
 		ChunkPos spawnChunk = new ChunkPos(new BlockPos(world.getWorldInfo().getSpawnX(), 0, world.getWorldInfo().getSpawnZ()));
 		Stream<ChunkPos> spawnChunks = ChunkPos.getAllInBox(spawnChunk, 11);
 		
-		for(long values : world.getForcedChunks()) {
-			if(pos.equals(new ChunkPos(ChunkPos.getX(values), ChunkPos.getZ(values)))) {
+		for (long values : world.getForcedChunks()) {
+			if (pos.equals(new ChunkPos(ChunkPos.getX(values), ChunkPos.getZ(values)))) {
 				return true;
 			}
 		}
 		
-		if(spawnChunks.anyMatch(chunk -> chunk.equals(pos))) {
+		if (spawnChunks.anyMatch(chunk -> chunk.equals(pos))) {
 			return true;
 		}
 		

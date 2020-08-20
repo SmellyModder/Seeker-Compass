@@ -1,7 +1,6 @@
 package smelly.seekercompass;
 
 import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
 import net.minecraft.loot.LootTables;
 import net.minecraft.loot.TableLootEntry;
 import net.minecraft.util.ResourceLocation;
@@ -16,10 +15,8 @@ import net.minecraftforge.fml.common.Mod;
 public class LootInjector {
 	@SubscribeEvent
 	public static void onInjectLoot(LootTableLoadEvent event) {
-		ResourceLocation name = event.getName();
-		LootTable table = event.getTable();
-		if (name.equals(LootTables.CHESTS_NETHER_BRIDGE)) {
-			table.addPool(buildLootBool("nether_fortress", 1, 0));
+		if (event.getName().equals(LootTables.CHESTS_NETHER_BRIDGE)) {
+			event.getTable().addPool(buildLootBool("nether_fortress", 1, 0));
 		}
 	}
 	

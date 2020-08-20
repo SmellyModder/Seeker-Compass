@@ -16,9 +16,9 @@ import net.minecraftforge.registries.ForgeRegistries;
  * @author - SmellyModder(Luke Tonon)
  */
 public class MessageS2CParticle {
-	public String particleName;
-	public double posX, posY, posZ;
-	public double motionX, motionY, motionZ;
+	private String particleName;
+	private double posX, posY, posZ;
+	private double motionX, motionY, motionZ;
 	
 	public MessageS2CParticle(String particleName, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
 		this.particleName = particleName;

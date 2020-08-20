@@ -19,7 +19,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 @OnlyIn(Dist.CLIENT)
 public class SeekerEyesParticle extends SpriteTexturedParticle {
-	protected final IAnimatedSprite animatedSprite;
+	private final IAnimatedSprite animatedSprite;
 	private final float scale;
 
 	public SeekerEyesParticle(IAnimatedSprite animatedSprite, ClientWorld world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
@@ -48,9 +48,7 @@ public class SeekerEyesParticle extends SpriteTexturedParticle {
 		super.tick();
 		this.prevParticleAngle = this.particleAngle;
 		
-		if(this.isAlive()) {
-			this.selectSpriteWithAge(this.animatedSprite);
-		}
+		if (this.isAlive()) this.selectSpriteWithAge(this.animatedSprite);
 	}
 	
 	@Override
@@ -66,7 +64,7 @@ public class SeekerEyesParticle extends SpriteTexturedParticle {
 		int j = i & 255;
 		int k = i >> 16 & 255;
 		j = j + (int) (f * 15f * 16f);
-		if(j > 240) {
+		if (j > 240) {
 			j = 240;
 		}
 		return j | k << 16;

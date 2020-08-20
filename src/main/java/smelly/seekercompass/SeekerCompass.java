@@ -34,6 +34,7 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import smelly.seekercompass.SeekerCompassItem.RotationData;
 import smelly.seekercompass.enchants.SCEnchants;
 
 /**
@@ -75,7 +76,7 @@ public class SeekerCompass {
 		});
 	}
 	
-	void setupCommon(final FMLCommonSetupEvent event) {
+	private void setupCommon(final FMLCommonSetupEvent event) {
 		ItemGroup.TOOLS.setRelevantEnchantmentTypes(add(ItemGroup.TOOLS.getRelevantEnchantmentTypes(), SCEnchants.SEEKER_COMPASS));
 	}
 	
@@ -103,7 +104,7 @@ public class SeekerCompass {
 							
 							CompoundNBT tag = stack.getTag();
 							if (tag != null && tag.contains("Rotations") && tag.contains("EntityStatus") && !stack.isOnItemFrame()) {
-								return (float) SeekerCompassItem.positiveModulo(SeekerCompassItem.getRotationData(stack).rotation, 1.0F);
+								return (float) SeekerCompassItem.positiveModulo(getSCRotation(stack), 1.0F);
 							} else {
 								double randRotation = Math.random();
 								
@@ -137,7 +138,11 @@ public class SeekerCompass {
 		});
 	}
 	
-	public static EnchantmentType[] add(EnchantmentType[] array, EnchantmentType element) {
+	private static double getSCRotation(ItemStack stack) {
+		return RotationData.read(stack.getTag().getCompound("Rotations")).rotation;
+	}
+	
+	private static EnchantmentType[] add(EnchantmentType[] array, EnchantmentType element) {
 		EnchantmentType[] newArray = array;
 		int arrayLength = Array.getLength(newArray);
 		Object newArrayObject = Array.newInstance(newArray.getClass().getComponentType(), arrayLength + 1);
