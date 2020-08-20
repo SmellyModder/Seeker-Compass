@@ -8,12 +8,12 @@ import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteTexturedParticle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.Quaternion;
-import net.minecraft.client.renderer.Vector3f;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particles.BasicParticleType;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -25,7 +25,7 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 	protected final IAnimatedSprite animatedSprite;
 	private final float scale;
 
-	public SeekerWarpParticle(IAnimatedSprite animatedSprite, World world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
+	public SeekerWarpParticle(IAnimatedSprite animatedSprite, ClientWorld world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
 		super(world, posX, posY, posZ, motionX, motionY, motionZ);
 		this.scale = this.particleScale = 1.0F;
 		this.particleRed = 1.0F;
@@ -42,7 +42,7 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 		float f = ((float) this.age + partialTicks) / (float) this.maxAge;
 		this.particleScale = this.scale * (1f - f * f * 0.5f);
 		
-		Vec3d vec3d = activeInfo.getProjectedView();
+		Vector3d vec3d = activeInfo.getProjectedView();
 		float f1 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
 		float f2 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
 		float f3 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
@@ -101,7 +101,7 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 		}
     	
 		@Override
-		public Particle makeParticle(BasicParticleType type, World world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+		public Particle makeParticle(BasicParticleType type, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
 			return new SeekerWarpParticle(this.animatedSprite, world, x, y + 0.01F, z, xSpeed, ySpeed, zSpeed);
 		}
 	}

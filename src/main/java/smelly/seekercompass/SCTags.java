@@ -2,16 +2,15 @@ package smelly.seekercompass;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.tags.Tag;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.tags.ITag.INamedTag;
 
 public class SCTags {
 	
 	public static class EntityTags {
-		public static final Tag<EntityType<?>> SUMMONABLES = createTag("summonables");
+		public static final INamedTag<EntityType<?>> SUMMONABLES = createTag("summonables");
 		
-		public static Tag<EntityType<?>> createTag(String name) {
-			return new EntityTypeTags.Wrapper(new ResourceLocation(SeekerCompass.MOD_ID, name));
+		public static INamedTag<EntityType<?>> createTag(String name) {
+			return EntityTypeTags.func_232896_a_(SeekerCompass.MOD_ID + name);
 		}
 	}
 

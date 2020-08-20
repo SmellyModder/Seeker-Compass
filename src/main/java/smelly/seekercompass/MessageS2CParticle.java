@@ -53,12 +53,12 @@ public class MessageS2CParticle {
 	
 	public static boolean handle(MessageS2CParticle message, Supplier<NetworkEvent.Context> ctx) {
 		NetworkEvent.Context context = ctx.get();
-		if(context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
+		if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 			context.enqueueWork(() -> {
 				World world = Minecraft.getInstance().player.world;
 				BasicParticleType particleType = (BasicParticleType) ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation(message.particleName));
 				
-				if(particleType != null) {
+				if (particleType != null) {
 					world.addParticle(particleType, message.posX, message.posY, message.posZ, message.motionX, message.motionY, message.motionZ);
 				}
 			});

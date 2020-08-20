@@ -5,13 +5,14 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Maps;
-import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 
+import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.ICriterionTrigger;
 import net.minecraft.advancements.PlayerAdvancements;
-import net.minecraft.advancements.criterion.CriterionInstance;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.loot.ConditionArrayParser;
+import net.minecraft.loot.ConditionArraySerializer;
 import net.minecraft.util.ResourceLocation;
 
 /**
@@ -39,9 +40,9 @@ public class EmptyTrigger implements ICriterionTrigger<EmptyTrigger.Instance> {
 	@Override
 	public void removeListener(PlayerAdvancements playerAdvancements, Listener<Instance> listener) {
 		Listeners listeners = this.listeners.get(playerAdvancements);
-		if(listeners != null) {
+		if (listeners != null) {
 			listeners.remove(listener);
-			if(listeners.isEmpty()) {
+			if (listeners.isEmpty()) {
 				this.listeners.remove(playerAdvancements);
 			}
 		}
@@ -53,20 +54,33 @@ public class EmptyTrigger implements ICriterionTrigger<EmptyTrigger.Instance> {
 	}
 	
 	@Override
-	public Instance deserializeInstance(JsonObject json, JsonDeserializationContext context) {
+	public Instance deserialize(JsonObject json, ConditionArrayParser parser) {
 		return new Instance(this.id);
 	}
 	
 	public void trigger(ServerPlayerEntity player) {
 		Listeners listeners = this.listeners.get(player.getAdvancements());
-		if(listeners != null) {
+		if (listeners != null) {
 			listeners.trigger();
 		}
 	}
 	
-	public static class Instance extends CriterionInstance {
+	public static class Instance implements ICriterionInstance {
+		private final ResourceLocation id;
+		
 		Instance(ResourceLocation id) {
-			super(id);
+			super();
+			this.id = id;
+		}
+		
+		@Override
+		public ResourceLocation getId() {
+			return this.id;
+		}
+
+		@Override
+		public JsonObject serialize(ConditionArraySerializer serializer) {
+			return new JsonObject();
 		}
 	}
 	

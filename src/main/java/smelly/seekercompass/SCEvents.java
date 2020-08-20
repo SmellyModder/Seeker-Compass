@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.monster.ZombiePigmanEntity;
+import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
@@ -18,7 +18,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -55,7 +55,7 @@ public class SCEvents {
 				
 				if(itemstack.getItem() == SeekerCompass.SEEKER_COMPASS.get() && SeekerCompassItem.isNotBroken(itemstack)) {
 					if(itemstack.hasTag() && itemstack.getTag().contains("TrackingEntity")) {
-						Entity entity = ((ServerWorld) world).getEntityByUuid(NBTUtil.readUniqueId(itemstack.getTag().getCompound("TrackingEntity")));
+						Entity entity = ((ServerWorld) world).getEntityByUuid(NBTUtil.readUniqueId(itemstack.getTag().get("TrackingEntity")));
 						
 						if(entity == target) {
 							itemstack.getTag().remove("TrackingEntity");
@@ -65,9 +65,9 @@ public class SCEvents {
 							
 							Random rand = player.getRNG();
 							for(int i = 0; i < 8; i++) {
-								Vec3d targetPosition = target.getPositionVec();
-								Vec3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
-								Vec3d motion = targetPosition.subtract(position.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
+								Vector3d targetPosition = target.getPositionVec();
+								Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
+								Vector3d motion = targetPosition.subtract(position.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
 								
 								SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", targetPosition.getX(), targetPosition.getY(), targetPosition.getZ(), motion.getX(), motion.getY(), motion.getZ()));
 							}
@@ -75,16 +75,16 @@ public class SCEvents {
 						}
 					}
 					
-					itemstack.getOrCreateTag().put("TrackingEntity", NBTUtil.writeUniqueId(target.getUniqueID()));
+					itemstack.getOrCreateTag().put("TrackingEntity", NBTUtil.func_240626_a_(target.getUniqueID()));
 					player.addStat(Stats.ITEM_USED.get(itemstack.getItem()));
 					player.swingArm(hand);
 					player.world.playSound(null, target.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 0.25F);
 					
 					Random rand = player.getRNG();
 					for(int i = 0; i < 8; i++) {
-						Vec3d targetPosition = target.getPositionVec();
-						Vec3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
-						Vec3d motion = position.subtract(targetPosition.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
+						Vector3d targetPosition = target.getPositionVec();
+						Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
+						Vector3d motion = position.subtract(targetPosition.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
 						
 						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", position.getX(), position.getY(), position.getZ(), motion.getX(), motion.getY(), motion.getZ()));
 					}
@@ -95,16 +95,16 @@ public class SCEvents {
 	
 	@SubscribeEvent
 	public static void onEntitySpawned(EntityJoinWorldEvent event) {
-		if(event.getWorld().isRemote) return;
+		if (event.getWorld().isRemote) return;
 		
 		Entity entity = event.getEntity();
-		if(entity.getType() == EntityType.ZOMBIE_PIGMAN) {
+		if (entity.getType() == EntityType.ZOMBIFIED_PIGLIN) {
 			CompoundNBT nbt = entity.getPersistentData();
-			if(!nbt.getBoolean(TAG_SPAWNED)) {
-				ZombiePigmanEntity pigman = (ZombiePigmanEntity) entity;
-				if(pigman.getItemStackFromSlot(EquipmentSlotType.OFFHAND).isEmpty() && pigman.getRNG().nextFloat() < 0.02F) {
-					pigman.setItemStackToSlot(EquipmentSlotType.OFFHAND, new ItemStack(SeekerCompass.SEEKER_COMPASS.get()));
-					pigman.setDropChance(EquipmentSlotType.OFFHAND, 2.0F);
+			if (!nbt.getBoolean(TAG_SPAWNED)) {
+				ZombifiedPiglinEntity piglin = (ZombifiedPiglinEntity) entity;
+				if (piglin.getItemStackFromSlot(EquipmentSlotType.OFFHAND).isEmpty() && piglin.getRNG().nextFloat() < 0.02F) {
+					piglin.setItemStackToSlot(EquipmentSlotType.OFFHAND, new ItemStack(SeekerCompass.SEEKER_COMPASS.get()));
+					piglin.setDropChance(EquipmentSlotType.OFFHAND, 2.0F);
 				}
 				nbt.putBoolean(TAG_SPAWNED, true);
 			}
@@ -117,27 +117,27 @@ public class SCEvents {
 		ChunkPos chunkpos = new ChunkPos(entity.getPosition());
 		CompoundNBT tag = entity.getPersistentData();
 		
-		if(!(entity.getEntityWorld() instanceof ServerWorld)) return;
+		if (!(entity.getEntityWorld() instanceof ServerWorld)) return;
 		ServerWorld world = (ServerWorld) entity.getEntityWorld();
 		
-		if(tag.contains(TAG_CHUNK_UPDATE) && tag.getBoolean(TAG_CHUNK_UPDATE)) {
-			if(tag.contains(TAG_PREV_CHUNK)) {
+		if (tag.contains(TAG_CHUNK_UPDATE) && tag.getBoolean(TAG_CHUNK_UPDATE)) {
+			if (tag.contains(TAG_PREV_CHUNK)) {
 				long prevChunkLong = tag.getLong(TAG_PREV_CHUNK);
 				ChunkPos prevChunkPos = new ChunkPos(ChunkPos.getX(prevChunkLong), ChunkPos.getZ(prevChunkLong));
-				if(!chunkpos.equals(prevChunkPos)) {
-					if(!isChunkForced(world, prevChunkPos)) {
+				if (!chunkpos.equals(prevChunkPos)) {
+					if (!isChunkForced(world, prevChunkPos)) {
 						world.getChunkProvider().forceChunk(prevChunkPos, false);
 					}
 				}
 			}
 			
-			if(tag.contains(TAG_CHUNK_TIMER)) {
+			if (tag.contains(TAG_CHUNK_TIMER)) {
 				int timer = tag.getInt(TAG_CHUNK_TIMER);
-				if(timer > 0) {
+				if (timer > 0) {
 					world.getChunkProvider().forceChunk(chunkpos, true);
 					entity.getPersistentData().putInt(TAG_CHUNK_TIMER, timer - 1);
 				} else {
-					if(!isChunkForced(world, chunkpos)) {
+					if (!isChunkForced(world, chunkpos)) {
 						world.getChunkProvider().forceChunk(chunkpos, false);
 					}
 					entity.getPersistentData().putBoolean(TAG_CHUNK_UPDATE, false);
