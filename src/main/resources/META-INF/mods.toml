@@ -8,7 +8,7 @@ issueTrackerURL="https://github.com/SmellyModder/Seeker-Compass/issues"
     version="1.0"
     displayName="Seeker Compass"
     authors="SmellyModder(Luke Tonon), Five/Paradiscal"
-    description='''A mod that adds a new compass used to track entities, even players'''
+    description='''A mod that adds a new compass used to track living entities'''
     displayURL=""
     [[dependencies.seeker_compass]]
         modId="forge"
