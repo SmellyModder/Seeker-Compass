@@ -228,12 +228,15 @@ public class SeekerCompassItem extends Item {
 					
 					if (entity != null) {
 						Vector3d pos = entity.getPositionVec();
+						double x = pos.getX();
+						double y = pos.getY();
+						double z = pos.getZ();
 						
-						if (player.attemptTeleport(pos.getX(), pos.getY(), pos.getZ(), false)) {
+						if (player.attemptTeleport(x, y, z, false)) {
 							player.fallDistance = 0.0F;
-							world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+							world.playSound(null, x, y, z, SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
 							pos = player.getPositionVec();
-							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", pos.getX(), pos.getY(), pos.getZ(), 0.0F, 0.0F, 0.0F));
+							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", player.getPosX(), player.getPosY(), player.getPosZ(), 0.0F, 0.0F, 0.0F));
 							stack.shrink(1);
 							
 							return ActionResult.resultSuccess(stack);
@@ -255,9 +258,9 @@ public class SeekerCompassItem extends Item {
 			if (world instanceof ServerWorld) {
 				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
 				if (trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.contains(trackedEntity.getType())) {
-					if (((LivingEntity) trackedEntity).attemptTeleport(placingPos.getX(), placingPos.getY(), placingPos.getZ(), false)) {
+					if (((LivingEntity) trackedEntity).attemptTeleport(placingPos.getX() + 0.5F, placingPos.getY(), placingPos.getZ() + 0.5F, false)) {
 						world.playSound(null, placingPos.getX(), placingPos.getY(), placingPos.getZ(), SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
-						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", placingPos.getX(), placingPos.getY(), placingPos.getZ(), 0.0F, 0.0F, 0.0F));
+						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", trackedEntity.getPosX(), trackedEntity.getPosY(), trackedEntity.getPosZ(), 0.0F, 0.0F, 0.0F));
 						
 						if (!player.isCreative()) {
 							int damage = MathHelper.clamp(stack.getDamage() + 300, 0, stack.getMaxDamage() - 1);
