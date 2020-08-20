@@ -179,7 +179,7 @@ public class SeekerCompassItem extends Item {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
 		ItemStack stack = player.getHeldItem(hand);
-		if (isNotBroken(stack) && stack.hasTag() && stack.getTag().contains(TRACKING_TAG) && player.isSneaking()) {
+		if (isNotBroken(stack) && stack.hasTag() && stack.getTag().contains(TRACKING_TAG)) {
 			int level = EnchantmentHelper.getEnchantmentLevel(SCEnchants.VOODOO.get(), stack);
 			if (level > 0 && !getTargetEntity(player, 8).isPresent()) {
 				CompoundNBT tag = stack.getTag();
@@ -254,7 +254,7 @@ public class SeekerCompassItem extends Item {
 		PlayerEntity player = context.getPlayer();
 		World world = context.getWorld();
 		BlockPos placingPos = context.getPos().up();
-		if (isNotBroken(stack) && EnchantmentHelper.getEnchantmentLevel(SCEnchants.SUMMONING.get(), stack) > 0 && stack.hasTag() && stack.getTag().contains(TRACKING_TAG) && player.isSneaking()) {
+		if (isNotBroken(stack) && EnchantmentHelper.getEnchantmentLevel(SCEnchants.SUMMONING.get(), stack) > 0 && stack.hasTag() && stack.getTag().contains(TRACKING_TAG)) {
 			if (world instanceof ServerWorld) {
 				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
 				if (trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.contains(trackedEntity.getType())) {
