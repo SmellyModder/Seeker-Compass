@@ -202,7 +202,7 @@ public class SeekerCompassItem extends Item {
 							Vector3d motion = position.subtract(targetPosition.add(0.0F, entity.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
 							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", position.getX(), position.getY(), position.getZ(), motion.getX(), motion.getY(), motion.getZ()));
 						}
-							
+						
 						if (!player.isCreative()) {
 							int damage = MathHelper.clamp(stack.getDamage() + 400, 0, stack.getMaxDamage() - 1);
 							stack.setDamage(damage);
