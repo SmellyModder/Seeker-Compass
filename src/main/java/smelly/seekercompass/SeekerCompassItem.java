@@ -224,7 +224,7 @@ public class SeekerCompassItem extends Item {
 				return ActionResult.resultConsume(stack);
 			} else if (EnchantmentHelper.getEnchantmentLevel(SCEnchants.WARPING.get(), stack) > 0 && !getTargetEntity(player, 8).isPresent()) {
 				if (world instanceof ServerWorld) {
-					Entity entity = getEntity((ServerWorld) world, stack);
+					Entity entity = this.getEntity((ServerWorld) world, stack);
 					
 					if (entity != null) {
 						Vector3d pos = entity.getPositionVec();
@@ -237,7 +237,13 @@ public class SeekerCompassItem extends Item {
 							world.playSound(null, x, y, z, SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
 							pos = player.getPositionVec();
 							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", player.getPosX(), player.getPosY(), player.getPosZ(), 0.0F, 0.0F, 0.0F));
-							stack.shrink(1);
+							
+							if (!player.isCreative()) {
+								if (player.getRNG().nextFloat() < 0.25F) {
+									stack.shrink(1);
+								}
+								stack.setDamage(1200);
+							}
 							
 							return ActionResult.resultSuccess(stack);
 						}
