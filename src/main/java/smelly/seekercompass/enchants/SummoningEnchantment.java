@@ -7,7 +7,7 @@ import net.minecraft.enchantment.Enchantment;
  */
 public class SummoningEnchantment extends SeekerCompassEnchant {
 
-	public SummoningEnchantment(Rarity rarity) {
+	public SummoningEnchantment() {
 		super(Rarity.RARE);
 	}
 	

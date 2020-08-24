@@ -17,6 +17,6 @@ public class SCEnchants {
 	public static final RegistryObject<Enchantment> VOODOO = ENCHANTMENTS.register("voodoo", () -> new VoodooEnchantment());
 	public static final RegistryObject<Enchantment> TRACKING = ENCHANTMENTS.register("tracking", () -> new TrackingEnchantment());
 	public static final RegistryObject<Enchantment> WARPING = ENCHANTMENTS.register("warping", () -> new WarpingEnchantment());
-	public static final RegistryObject<Enchantment> SUMMONING = ENCHANTMENTS.register("summoning", () -> new WarpingEnchantment());
+	public static final RegistryObject<Enchantment> SUMMONING = ENCHANTMENTS.register("summoning", () -> new SummoningEnchantment());
 	public static final RegistryObject<Enchantment> PERSISTENCE = ENCHANTMENTS.register("persistence", () -> new PersistenceEnchantment());
 }
