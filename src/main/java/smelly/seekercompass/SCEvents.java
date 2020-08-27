@@ -60,7 +60,7 @@ public class SCEvents {
 							tag.remove("TrackingEntity");
 							tag.remove("EntityStatus");
 							tag.remove("Rotations");
-							player.world.playSound(null, target.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
+							player.world.playSound(null, target.func_233580_cy_(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
 							
 							Random rand = player.getRNG();
 							for (int i = 0; i < 8; i++) {
@@ -77,7 +77,7 @@ public class SCEvents {
 					itemstack.getOrCreateTag().put("TrackingEntity", NBTUtil.func_240626_a_(target.getUniqueID()));
 					player.addStat(Stats.ITEM_USED.get(itemstack.getItem()));
 					player.swingArm(hand);
-					player.world.playSound(null, target.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 0.25F);
+					player.world.playSound(null, target.func_233580_cy_(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 0.25F);
 					
 					Random rand = player.getRNG();
 					Vector3d targetPosition = target.getPositionVec();
@@ -112,7 +112,7 @@ public class SCEvents {
 	@SubscribeEvent
 	public static void onEntityTick(LivingEvent.LivingUpdateEvent event) {
 		LivingEntity entity = event.getEntityLiving();
-		ChunkPos chunkpos = new ChunkPos(entity.getPosition());
+		ChunkPos chunkpos = new ChunkPos(entity.func_233580_cy_());
 		CompoundNBT tag = entity.getPersistentData();
 		
 		if (!(entity.getEntityWorld() instanceof ServerWorld)) return;

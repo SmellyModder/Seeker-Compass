@@ -1,15 +1,7 @@
 package smelly.seekercompass;
 
-import java.awt.Color;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
 import com.mojang.datafixers.util.Pair;
-
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -26,17 +18,8 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.*;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -49,6 +32,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.PacketDistributor;
 import smelly.seekercompass.advancements.SCCriteriaTriggers;
 import smelly.seekercompass.enchants.SCEnchants;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.function.Predicate;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -156,22 +145,21 @@ public class SeekerCompassItem extends Item {
 			
 			tooltip.add(new TranslationTextComponent("tooltip.seeker_compass.tracking_entity"));
 			
-			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_type").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(I18n.format(status.entityType))));
-			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_name").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(status.entityName)));
+			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_type").func_240699_a_(TextFormatting.GRAY)).func_230529_a_(new StringTextComponent(I18n.format(status.entityType))));
+			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.entity_name").func_240699_a_(TextFormatting.GRAY)).func_230529_a_(new StringTextComponent(status.entityName)));
 			
 			boolean alive = status.isAlive;
 			TextFormatting color = alive ? TextFormatting.GREEN : TextFormatting.RED;
 			String aliveString = String.valueOf(alive); 
 			aliveString = aliveString.substring(0,1).toUpperCase() + aliveString.substring(1).toLowerCase();
 			
-			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.alive").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(aliveString).mergeStyle(color)));
+			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.alive").func_240699_a_(TextFormatting.GRAY)).func_230529_a_(new StringTextComponent(aliveString).func_240699_a_(color)));
 			
-			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.health").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(String.valueOf(status.health)).mergeStyle(TextFormatting.GREEN)));
+			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.health").func_240699_a_(TextFormatting.GRAY)).func_230529_a_(new StringTextComponent(String.valueOf(status.health)).func_240699_a_(TextFormatting.GREEN)));
 		
 			if (EnchantmentHelper.getEnchantmentLevel(SCEnchants.TRACKING.get(), stack) > 0) {
-				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.blockpos").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(status.pos.func_229422_x_())));
-				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.standing_on").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(I18n.format(world.getBlockState(status.pos.down()).getBlock().getTranslationKey()))));
-				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.biome").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(I18n.format(world.getBiome(status.pos).getTranslationKey()))));
+				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.blockpos").func_240699_a_(TextFormatting.GRAY)).func_230529_a_(new StringTextComponent(status.pos.func_229422_x_())));
+				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.standing_on").func_240699_a_(TextFormatting.GRAY)).func_230529_a_(new StringTextComponent(I18n.format(world.getBlockState(status.pos.down()).getBlock().getTranslationKey()))));
 			}
 		}
 	}
@@ -185,7 +173,7 @@ public class SeekerCompassItem extends Item {
 				CompoundNBT tag = stack.getTag();
 				if (tag != null && tag.contains(VOODOO_TAG) && getVoodooData(tag).timer > 0 && !player.isCreative()) {
 					if (!world.isRemote) {
-						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").append((new StringTextComponent(String.valueOf(getVoodooData(tag).timer)).mergeStyle(TextFormatting.GOLD))), player.getUniqueID());
+						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").func_230529_a_((new StringTextComponent(String.valueOf(getVoodooData(tag).timer)).func_240699_a_(TextFormatting.GOLD))), player.getUniqueID());
 					}
 					return ActionResult.resultFail(stack);
 				}
@@ -263,7 +251,7 @@ public class SeekerCompassItem extends Item {
 		if (isNotBroken(stack) && EnchantmentHelper.getEnchantmentLevel(SCEnchants.SUMMONING.get(), stack) > 0 && stack.hasTag() && stack.getTag().contains(TRACKING_TAG)) {
 			if (world instanceof ServerWorld) {
 				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
-				if (trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.contains(trackedEntity.getType())) {
+				if (trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.func_230235_a_(trackedEntity.getType())) {
 					if (((LivingEntity) trackedEntity).attemptTeleport(placingPos.getX() + 0.5F, placingPos.getY(), placingPos.getZ() + 0.5F, false)) {
 						world.playSound(null, placingPos.getX(), placingPos.getY(), placingPos.getZ(), SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
 						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", trackedEntity.getPosX(), trackedEntity.getPosY(), trackedEntity.getPosZ(), 0.0F, 0.0F, 0.0F));
@@ -284,7 +272,8 @@ public class SeekerCompassItem extends Item {
 			CompoundNBT tag = stack.getTag();
 			if (tag == null || !tag.contains(TRACKING_TAG)) {
 				boolean creative = player.isCreative();
-				if (world.getBlockState(placingPos.down()).getBlock() == Blocks.OBSIDIAN && (player.experienceLevel >= 10 || creative)) {
+				Block downBlock = world.getBlockState(placingPos.down()).getBlock();
+				if (downBlock == Blocks.OBSIDIAN && (player.experienceLevel >= 10 || creative)) {
 					if (!creative) {
 						player.experienceLevel -= 10;
 					}
@@ -311,7 +300,7 @@ public class SeekerCompassItem extends Item {
 										SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", targetPosition.getX(), targetPosition.getY(), targetPosition.getZ(), motion.getX(), motion.getY(), motion.getZ()));
 									}
 									
-									player.world.playSound(null, players.getPosition(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
+									player.world.playSound(null, players.func_233580_cy_(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
 								}
 							}
 						}
@@ -322,7 +311,7 @@ public class SeekerCompassItem extends Item {
 		}
 		return super.onItemUse(context);
 	}
-	
+
 	@Override
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
 		return false;
@@ -340,8 +329,7 @@ public class SeekerCompassItem extends Item {
 	
 	@Override
 	public int getRGBDurabilityForDisplay(ItemStack stack) {
-		Color color = new Color(16743936);
-		return color.getRGB();
+		return 16743936;
 	}
 	
 	public static double positiveModulo(double numerator, double denominator) {
@@ -473,7 +461,7 @@ public class SeekerCompassItem extends Item {
 			if (trackingEntity instanceof LivingEntity) {
 				tag.putFloat("Health", ((LivingEntity) trackingEntity).getHealth());
 			}
-			tag.put("Pos", NBTUtil.writeBlockPos(trackingEntity.getPosition()));
+			tag.put("Pos", NBTUtil.writeBlockPos(trackingEntity.func_233580_cy_()));
 			return tag;
 		}
 		

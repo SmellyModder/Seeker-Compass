@@ -55,7 +55,7 @@ public class SeekerCompass {
 		.simpleChannel();
 	
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).maxStackSize(1).rarity(Rarity.UNCOMMON).group(ItemGroup.TOOLS)));
+	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).maxDamage(1200).rarity(Rarity.UNCOMMON).group(ItemGroup.TOOLS)));
 	
 	public SeekerCompass() {
 		instance = this;
@@ -132,9 +132,7 @@ public class SeekerCompass {
 					return this.rotation;
 				}
 			});
-			ItemModelsProperties.func_239418_a_(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> {
-				return SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F;
-			});
+			ItemModelsProperties.func_239418_a_(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F);
 		});
 	}
 	
