@@ -59,11 +59,9 @@ public class SeekerCompass {
 	
 	public SeekerCompass() {
 		instance = this;
-		
-		CHANNEL.messageBuilder(MessageS2CParticle.class, 0)
-		.encoder(MessageS2CParticle::serialize).decoder(MessageS2CParticle::deserialize)
-		.consumer(MessageS2CParticle::handle)
-		.add();
+
+		CHANNEL.registerMessage(0, MessageS2CParticle.class, MessageS2CParticle::serialize, MessageS2CParticle::deserialize, MessageS2CParticle::handle);
+		CHANNEL.registerMessage(1, MessageSC2UpdateStalker.class, MessageSC2UpdateStalker::serialize, MessageSC2UpdateStalker::deserialize, MessageSC2UpdateStalker::handle);
 		
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(modEventBus);

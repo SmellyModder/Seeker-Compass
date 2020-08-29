@@ -3,6 +3,7 @@ package smelly.seekercompass;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
@@ -13,6 +14,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -20,6 +22,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -36,7 +39,7 @@ public class SCEvents {
 	public static final String TAG_CHUNK_UPDATE = "seeker_compass:chunk_update";
 	public static final String TAG_CHUNK_TIMER = "seeker_compass:chunk_timer";
 	private static final String TAG_PREV_CHUNK = "seeker_compass:prev_chunk";
-	
+
 	@SubscribeEvent
 	public static void trackEntity(PlayerInteractEvent.EntityInteract event) {
 		World world = event.getWorld();
@@ -141,6 +144,18 @@ public class SCEvents {
 					tag.putBoolean(TAG_CHUNK_UPDATE, false);
 				}
 				tag.putLong(TAG_PREV_CHUNK, chunkpos.asLong());
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void onClientTick(TickEvent.PlayerTickEvent event) {
+		PlayerEntity player = event.player;
+		if (player.world.isRemote) {
+			Stalker stalker = (Stalker) player;
+			LivingEntity stalkingEntity = stalker.getStalkingEntity();
+			if (stalkingEntity != null && Minecraft.getInstance().gameRenderer.getShaderGroup() == null) {
+				Minecraft.getInstance().gameRenderer.loadShader(new ResourceLocation(SeekerCompass.MOD_ID, "shaders/post/seeker.json"));
 			}
 		}
 	}
