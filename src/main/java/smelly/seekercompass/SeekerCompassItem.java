@@ -57,10 +57,13 @@ public class SeekerCompassItem extends Item {
 			CompoundNBT tag = stack.getTag();
 			
 			if (world.getGameTime() % 20 == 0 && entity instanceof PlayerEntity && tag != null && tag.contains(TRACKING_TAG)) {
-				PlayerEntity player = (PlayerEntity) entity;
-				stack.damageItem(1, player, (living) -> {
-					living.sendBreakAnimation(player.getActiveHand());
-				});
+				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
+				if (trackedEntity != null && trackedEntity.isAlive()) {
+					PlayerEntity player = (PlayerEntity) entity;
+					stack.damageItem(1, player, (living) -> {
+						living.sendBreakAnimation(player.getActiveHand());
+					});
+				}
 			}
 			
 			if (tag != null && tag.contains(VOODOO_TAG)) {
