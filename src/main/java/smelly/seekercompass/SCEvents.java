@@ -3,18 +3,17 @@ package smelly.seekercompass;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -22,13 +21,15 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.network.PacketDistributor;
+import smelly.seekercompass.network.MessageS2CParticle;
+import smelly.seekercompass.network.MessageSC2UpdateStalker;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -149,14 +150,11 @@ public class SCEvents {
 	}
 
 	@SubscribeEvent
-	public static void onClientTick(TickEvent.PlayerTickEvent event) {
-		PlayerEntity player = event.player;
-		if (player.world.isRemote) {
-			Stalker stalker = (Stalker) player;
-			LivingEntity stalkingEntity = stalker.getStalkingEntity();
-			if (stalkingEntity != null && Minecraft.getInstance().gameRenderer.getShaderGroup() == null) {
-				Minecraft.getInstance().gameRenderer.loadShader(new ResourceLocation(SeekerCompass.MOD_ID, "shaders/post/seeker.json"));
-			}
+	public static void onPlayerDeath(LivingDeathEvent event) {
+		LivingEntity entity = event.getEntityLiving();
+		if (entity instanceof Stalker && !entity.world.isRemote) {
+			((Stalker) entity).setStalkingEntity(null);
+			SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) entity), new MessageSC2UpdateStalker());
 		}
 	}
 	

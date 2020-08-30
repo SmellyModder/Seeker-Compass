@@ -5,9 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
@@ -31,12 +29,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.PacketDistributor;
 import smelly.seekercompass.advancements.SCCriteriaTriggers;
 import smelly.seekercompass.enchants.SCEnchants;
+import smelly.seekercompass.network.MessageS2CParticle;
+import smelly.seekercompass.network.MessageSC2UpdateStalker;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -238,6 +237,11 @@ public class SeekerCompassItem extends Item {
 					}
 				}
 			} else if (EnchantmentHelper.getEnchantmentLevel(SCEnchants.STALKING.get(), stack) > 0 && !getTargetEntity(player, 8).isPresent()) {
+				Stalker stalker = (Stalker) player;
+				if (stalker.hasUnstalked()) {
+					stalker.setUnstalked(false);
+					return ActionResult.resultPass(stack);
+				}
 				if (world instanceof ServerWorld) {
 					Entity entity = this.getEntity((ServerWorld) world, stack);
 

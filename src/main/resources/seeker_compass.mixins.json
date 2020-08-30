@@ -9,7 +9,11 @@
   ],
   "client": [
     "ActiveRenderInfoMixin",
-    "EntityRendererManagerMixin"
+    "EntityRendererManagerMixin",
+    "IngameGuiMixin",
+    "ForgeIngameGuiMixin",
+    "ClientPlayerEntityMixin",
+    "GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

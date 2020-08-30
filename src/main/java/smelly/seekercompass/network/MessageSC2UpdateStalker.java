@@ -1,16 +1,13 @@
-package smelly.seekercompass;
+package smelly.seekercompass.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.particles.BasicParticleType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import smelly.seekercompass.Stalker;
 
 import java.util.function.Supplier;
 
@@ -19,6 +16,10 @@ public final class MessageSC2UpdateStalker {
 
     public MessageSC2UpdateStalker(int entityId) {
         this.entityId = entityId;
+    }
+
+    public MessageSC2UpdateStalker() {
+        this.entityId = -1;
     }
 
     public void serialize(PacketBuffer buf) {
@@ -34,9 +35,14 @@ public final class MessageSC2UpdateStalker {
         if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
             context.enqueueWork(() -> {
                 ClientPlayerEntity player = Minecraft.getInstance().player;
-                Entity entity = player.world.getEntityByID(message.entityId);
-                if (entity instanceof LivingEntity) {
-                    ((Stalker) player).setStalkingEntity((LivingEntity) entity);
+                int id = message.entityId;
+                if (id >= 0) {
+                    Entity entity = player.world.getEntityByID(message.entityId);
+                    if (entity instanceof LivingEntity) {
+                        ((Stalker) player).setStalkingEntity((LivingEntity) entity);
+                    }
+                } else {
+                    ((Stalker) player).setStalkingEntity(null);
                 }
             });
         }

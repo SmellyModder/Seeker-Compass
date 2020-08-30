@@ -16,6 +16,8 @@ import smelly.seekercompass.Stalker;
 
 @Mixin(ActiveRenderInfo.class)
 public abstract class ActiveRenderInfoMixin {
+    private static final Minecraft MC = Minecraft.getInstance();
+
     @Shadow
     private boolean thirdPerson;
     @Shadow
@@ -25,8 +27,9 @@ public abstract class ActiveRenderInfoMixin {
 
     @Inject(at = @At("RETURN"), method = "update")
     public void update(IBlockReader worldIn, Entity renderViewEntity, boolean thirdPersonIn, boolean thirdPersonReverseIn, float partialTicks, CallbackInfo info) {
-        LivingEntity stalkingEntity = ((Stalker) Minecraft.getInstance().player).getStalkingEntity();
+        LivingEntity stalkingEntity = ((Stalker) MC.player).getStalkingEntity();
         if (stalkingEntity != null) {
+            MC.gameSettings.hideGUI = true;
             this.thirdPerson = true;
             this.callSetDirection(stalkingEntity.getYaw(partialTicks), stalkingEntity.getPitch(partialTicks));
             this.callSetPosition(MathHelper.lerp(partialTicks, stalkingEntity.prevPosX, stalkingEntity.getPosX()), MathHelper.lerp(partialTicks, stalkingEntity.prevPosY, stalkingEntity.getPosY()) + (double) MathHelper.lerp(partialTicks, this.previousHeight, this.height), MathHelper.lerp(partialTicks, stalkingEntity.prevPosZ, stalkingEntity.getPosZ()));
