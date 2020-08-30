@@ -3,6 +3,7 @@ package smelly.seekercompass;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Sets;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
@@ -161,7 +162,8 @@ public class SCEvents {
 
 	@SubscribeEvent
 	public static void updateRemovedStalkingEntity(TickEvent.PlayerTickEvent event) {
-		Stalker stalker = (Stalker) event.player;
+		PlayerEntity player = event.player;
+		Stalker stalker = (Stalker) player;
 		LivingEntity stalkingEntity = stalker.getStalkingEntity();
 		if (stalkingEntity != null && !stalkingEntity.isAlive()) {
 			stalker.setStalkingEntity(null);
