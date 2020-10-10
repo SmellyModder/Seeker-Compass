@@ -1,6 +1,5 @@
 package smelly.seekercompass;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -58,6 +57,7 @@ public class SeekerCompassItem extends Item {
 	private static final String TRACKING_TAG = "TrackingEntity";
 	private static final String ENTITY_TAG = "EntityStatus";
 	private static final String ROTATIONS_TAG = "Rotations";
+	private static final String TRACKING_ONLY = "TrackingOnly";
 	
 	public SeekerCompassItem(Properties properties) {
 		super(properties);
@@ -73,6 +73,7 @@ public class SeekerCompassItem extends Item {
 				stack.damageItem(1, player, (living) -> {
 					living.sendBreakAnimation(player.getActiveHand());
 				});
+				stack.getTag().putBoolean(TRACKING_ONLY, true);
 			}
 			
 			if (tag != null && tag.contains(VOODOO_TAG)) {
@@ -151,7 +152,7 @@ public class SeekerCompassItem extends Item {
 	@Override
 	public void addInformation(ItemStack stack, World world, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 		CompoundNBT tag = stack.getTag();
-		if (SeekerCompassItem.isNotBroken(stack) && tag != null && tag.contains(TRACKING_TAG) && tag.contains(ENTITY_TAG)) {
+		if (SeekerCompassItem.isNotBroken(stack) && tag != null && !tag.getBoolean(TRACKING_ONLY) && tag.contains(TRACKING_TAG) && tag.contains(ENTITY_TAG)) {
 			EntityStatusData status = EntityStatusData.read(tag.getCompound(ENTITY_TAG));
 			
 			tooltip.add(new TranslationTextComponent("tooltip.seeker_compass.tracking_entity"));
@@ -179,11 +180,13 @@ public class SeekerCompassItem extends Item {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
 		ItemStack stack = player.getHeldItem(hand);
-		if (isNotBroken(stack) && stack.hasTag() && stack.getTag().contains(TRACKING_TAG)) {
+		CompoundNBT tag = stack.getTag();
+		boolean hasTag = tag != null;
+		if (hasTag && tag.getBoolean(TRACKING_ONLY)) return ActionResult.resultFail(stack);
+		if (isNotBroken(stack) && hasTag && tag.contains(TRACKING_TAG)) {
 			int level = EnchantmentHelper.getEnchantmentLevel(SCEnchants.VOODOO.get(), stack);
 			if (level > 0 && !getTargetEntity(player, 8).isPresent()) {
-				CompoundNBT tag = stack.getTag();
-				if (tag != null && tag.contains(VOODOO_TAG) && getVoodooData(tag).timer > 0 && !player.isCreative()) {
+				if (tag.contains(VOODOO_TAG) && getVoodooData(tag).timer > 0 && !player.isCreative()) {
 					if (!world.isRemote) {
 						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").append((new StringTextComponent(String.valueOf(getVoodooData(tag).timer)).mergeStyle(TextFormatting.GOLD))), player.getUniqueID());
 					}
@@ -257,10 +260,13 @@ public class SeekerCompassItem extends Item {
 	@Override
 	public ActionResultType onItemUse(ItemUseContext context) {
 		ItemStack stack = context.getItem();
+		CompoundNBT tag = stack.getTag();
+		boolean hasTag = tag != null;
+		if (hasTag && tag.getBoolean(TRACKING_ONLY)) return ActionResultType.FAIL;
 		PlayerEntity player = context.getPlayer();
 		World world = context.getWorld();
 		BlockPos placingPos = context.getPos().up();
-		if (isNotBroken(stack) && EnchantmentHelper.getEnchantmentLevel(SCEnchants.SUMMONING.get(), stack) > 0 && stack.hasTag() && stack.getTag().contains(TRACKING_TAG)) {
+		if (isNotBroken(stack) && EnchantmentHelper.getEnchantmentLevel(SCEnchants.SUMMONING.get(), stack) > 0 && hasTag && tag.contains(TRACKING_TAG)) {
 			if (world instanceof ServerWorld) {
 				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
 				if (trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.contains(trackedEntity.getType())) {
@@ -281,7 +287,6 @@ public class SeekerCompassItem extends Item {
 				}
 			}
 		} else {
-			CompoundNBT tag = stack.getTag();
 			if (tag == null || !tag.contains(TRACKING_TAG)) {
 				boolean creative = player.isCreative();
 				if (world.getBlockState(placingPos.down()).getBlock() == Blocks.OBSIDIAN && (player.experienceLevel >= 10 || creative)) {
@@ -322,7 +327,12 @@ public class SeekerCompassItem extends Item {
 		}
 		return super.onItemUse(context);
 	}
-	
+
+	@Override
+	public boolean isEnchantable(ItemStack stack) {
+		return !stack.hasTag() || !stack.getTag().getBoolean(TRACKING_ONLY);
+	}
+
 	@Override
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
 		return false;
@@ -340,8 +350,7 @@ public class SeekerCompassItem extends Item {
 	
 	@Override
 	public int getRGBDurabilityForDisplay(ItemStack stack) {
-		Color color = new Color(16743936);
-		return color.getRGB();
+		return 16743936;
 	}
 	
 	public static double positiveModulo(double numerator, double denominator) {

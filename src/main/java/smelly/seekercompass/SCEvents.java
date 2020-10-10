@@ -53,7 +53,9 @@ public class SCEvents {
 				
 				if (itemstack.getItem() == SeekerCompass.SEEKER_COMPASS.get() && SeekerCompassItem.isNotBroken(itemstack)) {
 					CompoundNBT tag = itemstack.getTag();
-					if (tag != null && tag.contains("TrackingEntity")) {
+					boolean hasTag = tag != null;
+					if (hasTag && tag.getBoolean("TrackingOnly")) return;
+					if (hasTag && tag.contains("TrackingEntity")) {
 						Entity entity = ((ServerWorld) world).getEntityByUuid(NBTUtil.readUniqueId(tag.get("TrackingEntity")));
 						
 						if (entity == target) {
