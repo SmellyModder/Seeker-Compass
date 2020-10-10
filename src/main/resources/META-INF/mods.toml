@@ -1,6 +1,5 @@
 modLoader="javafml"
 loaderVersion="[28,)"
-license="https://github.com/SmellyModder/Seeker-Compass/blob/1.16.x/LICENSE"
 issueTrackerURL="https://github.com/SmellyModder/Seeker-Compass/issues"
 
 [[mods]]
@@ -11,9 +10,8 @@ issueTrackerURL="https://github.com/SmellyModder/Seeker-Compass/issues"
     authors="SmellyModder(Luke Tonon), Five/Paradiscal"
     description='''A mod that adds a new compass used to track living entities'''
     displayURL=""
-
-[[dependencies.seeker_compass]]
-    modId="forge"
-    mandatory=true
-    versionRange="[33.0.22,)"
-    ordering="NONE"
+    [[dependencies.seeker_compass]]
+        modId="forge"
+        mandatory=true
+        versionRange="[${forge_version},)"
+        ordering="NONE"
