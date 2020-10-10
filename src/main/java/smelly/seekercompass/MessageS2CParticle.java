@@ -1,4 +1,4 @@
-package smelly.seekercompass.network;
+package smelly.seekercompass;
 
 import java.util.function.Supplier;
 
@@ -63,7 +63,6 @@ public class MessageS2CParticle {
 				}
 			});
 		}
-		context.setPacketHandled(true);
 		return true;
 	}
 }

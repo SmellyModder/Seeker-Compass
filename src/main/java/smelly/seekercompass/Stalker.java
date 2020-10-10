@@ -9,10 +9,4 @@ public interface Stalker {
 
     @Nullable
     LivingEntity getStalkingEntity();
-
-    boolean wasHidingGUI();
-
-    void setUnstalked(boolean unstalked);
-
-    boolean hasUnstalked();
 }

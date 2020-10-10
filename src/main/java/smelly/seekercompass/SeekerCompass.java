@@ -36,9 +36,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import smelly.seekercompass.SeekerCompassItem.RotationData;
 import smelly.seekercompass.enchants.SCEnchants;
-import smelly.seekercompass.network.MessageC2SResetStalker;
-import smelly.seekercompass.network.MessageS2CParticle;
-import smelly.seekercompass.network.MessageSC2UpdateStalker;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -65,8 +62,7 @@ public class SeekerCompass {
 
 		CHANNEL.registerMessage(0, MessageS2CParticle.class, MessageS2CParticle::serialize, MessageS2CParticle::deserialize, MessageS2CParticle::handle);
 		CHANNEL.registerMessage(1, MessageSC2UpdateStalker.class, MessageSC2UpdateStalker::serialize, MessageSC2UpdateStalker::deserialize, MessageSC2UpdateStalker::handle);
-		CHANNEL.registerMessage(2, MessageC2SResetStalker.class, MessageC2SResetStalker::serialize, MessageC2SResetStalker::deserialize, MessageC2SResetStalker::handle);
-
+		
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(modEventBus);
 		SCEnchants.ENCHANTMENTS.register(modEventBus);
