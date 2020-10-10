@@ -21,7 +21,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -156,15 +155,6 @@ public class SCEvents {
 		if (entity instanceof Stalker && !entity.world.isRemote) {
 			((Stalker) entity).setStalkingEntity(null);
 			SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) entity), new MessageSC2UpdateStalker());
-		}
-	}
-
-	@SubscribeEvent
-	public static void updateRemovedStalkingEntity(TickEvent.PlayerTickEvent event) {
-		Stalker stalker = (Stalker) event.player;
-		LivingEntity stalkingEntity = stalker.getStalkingEntity();
-		if (stalkingEntity != null && !stalkingEntity.isAlive()) {
-			stalker.setStalkingEntity(null);
 		}
 	}
 	
