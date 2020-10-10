@@ -73,7 +73,6 @@ public class SeekerCompassItem extends Item {
 				stack.damageItem(1, player, (living) -> {
 					living.sendBreakAnimation(player.getActiveHand());
 				});
-				stack.getTag().putBoolean(TRACKING_ONLY, true);
 			}
 			
 			if (tag != null && tag.contains(VOODOO_TAG)) {
