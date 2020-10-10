@@ -6,7 +6,6 @@
 	"enchantment.seeker_compass.warping": "Distorsión",
 	"enchantment.seeker_compass.summoning": "Invocación",
 	"enchantment.seeker_compass.persistence": "Persistencia",
-	"enchantment.seeker_compass.stalking": "Seguimiento",
 	
 	"tooltip.seeker_compass.tracking_entity": "Rastreando entidad: ",
 	"tooltip.seeker_compass.entity_type": "  Tipo de la entidad: ",
@@ -30,6 +29,5 @@
 	"enchantment.seeker_compass.tracking.desc": "Especifica el bloque, la posición y el bioma de la entidad rastreada.",
 	"enchantment.seeker_compass.warping.desc": "Te teletransporta hasta la entidad rastreada al utilizarlo.",
 	"enchantment.seeker_compass.summoning.desc": "Teletransporta a la entidad rastreada hasta el usuario al utilizarlo, pero solo si es invocable.",
-	"enchantment.seeker_compass.voodoo.desc": "Causa daño remoto a la entidad rastreada al utilizarlo.",
-	"enchantment.seeker_compass.stalking.desc": "Mira a través de los ojos de la entidad rastreada temporalmente."
+	"enchantment.seeker_compass.voodoo.desc": "Causa daño remoto a la entidad rastreada al utilizarlo."
 }
