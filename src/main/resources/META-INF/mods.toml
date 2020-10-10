@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/SmellyModder/Seeker-Compass/issues"
 [[mods]]
     modId="seeker_compass"
     namespace="seeker_compass"
-    version="2.0.1"
+    version="2.0.2"
     displayName="Seeker Compass"
     authors="SmellyModder(Luke Tonon), Five/Paradiscal"
     description='''A mod that adds a new compass used to track living entities'''
