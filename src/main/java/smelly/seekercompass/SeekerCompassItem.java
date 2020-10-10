@@ -60,7 +60,7 @@ public class SeekerCompassItem extends Item {
 				Entity trackedEntity = this.getEntity((ServerWorld) world, stack);
 				if (trackedEntity != null && trackedEntity.isAlive()) {
 					PlayerEntity player = (PlayerEntity) entity;
-					stack.damageItem(((Stalker) entity).getStalkingEntity() != null ? 10 : 1, player, (living) -> {
+					stack.damageItem(1, player, (living) -> {
 						living.sendBreakAnimation(player.getActiveHand());
 					});
 				}

@@ -13,7 +13,7 @@ public final class SCClientEvents {
     private static final Minecraft MC = Minecraft.getInstance();
 
     @SubscribeEvent
-    public static void onMouseClicked(InputEvent.MouseInputEvent event) {
+    public static void onKeyPressed(InputEvent.MouseInputEvent event) {
         ClientPlayerEntity player = MC.player;
         Stalker stalker = (Stalker) player;
         if (MC.currentScreen == null && event.getAction() == 1 && stalker != null && stalker.getStalkingEntity() != null) {
