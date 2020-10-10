@@ -5,7 +5,7 @@
   "minVersion": "0.8",
   "refmap": "seeker_compass.refmap.json",
   "mixins": [
-    "ServerPlayerEntityMixin"
+    "PlayerEntityMixin"
   ],
   "client": [
     "ActiveRenderInfoMixin",

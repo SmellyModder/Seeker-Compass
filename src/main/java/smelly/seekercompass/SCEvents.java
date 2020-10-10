@@ -1,12 +1,9 @@
 package smelly.seekercompass;
 
-import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import net.minecraft.client.entity.player.RemoteClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.ZombifiedPiglinEntity;
@@ -18,7 +15,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Hand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -34,7 +30,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.network.PacketDistributor;
-import smelly.seekercompass.network.MessageC2SResetStalker;
 import smelly.seekercompass.network.MessageS2CParticle;
 import smelly.seekercompass.network.MessageSC2UpdateStalker;
 
@@ -168,35 +163,11 @@ public class SCEvents {
 	@SubscribeEvent
 	public static void updateRemovedStalkingEntity(TickEvent.PlayerTickEvent event) {
 		PlayerEntity player = event.player;
-		if (player instanceof Stalker) {
-			Stalker stalker = (Stalker) player;
-			LivingEntity stalkingEntity = stalker.getStalkingEntity();
-			if (stalkingEntity != null) {
-				if (!stalkingEntity.isAlive()) {
-					stalker.setStalkingEntity(null);
-				} else if (!player.world.isRemote && !hasCompassForEntity(player, stalkingEntity)) {
-					stalker.setStalkingEntity(null);
-					SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new MessageSC2UpdateStalker());
-				}
-			}
+		Stalker stalker = (Stalker) player;
+		LivingEntity stalkingEntity = stalker.getStalkingEntity();
+		if (stalkingEntity != null && !stalkingEntity.isAlive()) {
+			stalker.setStalkingEntity(null);
 		}
-	}
-
-	private static boolean hasCompassForEntity(PlayerEntity player, LivingEntity entity) {
-		int entityId = entity.getEntityId();
-		ServerWorld world = (ServerWorld) player.world;
-		List<NonNullList<ItemStack>> nonArmorInventories = ImmutableList.of(player.inventory.mainInventory, player.inventory.offHandInventory);
-		for (List<ItemStack> stacks : nonArmorInventories) {
-			for (ItemStack stack : stacks) {
-				if (!stack.isEmpty() && stack.getItem() == SeekerCompass.SEEKER_COMPASS.get()) {
-					CompoundNBT tag = stack.getTag();
-					if (tag != null && tag.contains(SeekerCompassItem.TRACKING_TAG) && world.getEntityByUuid(NBTUtil.readUniqueId(tag.get(SeekerCompassItem.TRACKING_TAG))).getEntityId() == entityId) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
 	}
 	
 	/*

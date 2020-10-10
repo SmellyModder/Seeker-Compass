@@ -43,7 +43,7 @@ import java.util.function.Predicate;
  */
 public class SeekerCompassItem extends Item {
 	private static final String VOODOO_TAG = "Voodoo";
-	public static final String TRACKING_TAG = "TrackingEntity";
+	private static final String TRACKING_TAG = "TrackingEntity";
 	private static final String ENTITY_TAG = "EntityStatus";
 	private static final String ROTATIONS_TAG = "Rotations";
 	
