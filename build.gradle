@@ -1,23 +1,16 @@
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
-        maven { url = 'https://dist.creeper.host/Sponge/maven' }
         jcenter()
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-apply plugin: 'org.spongepowered.mixin'
-
-mixin {
-    add sourceSets.main, "seeker_compass.refmap.json"
-}
 
 version = '2.0.0'
 group = 'smelly.seeker_compass'
@@ -31,11 +24,13 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
+
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
             property 'forge.logging.console.level', 'debug'
-            arg "-mixin.config=seeker_compass.mixins.json"
+
             mods {
-                endergetic {
+                examplemod {
                     source sourceSets.main
                 }
             }
@@ -43,11 +38,13 @@ minecraft {
 
         server {
             workingDirectory project.file('run')
+
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
             property 'forge.logging.console.level', 'debug'
-            arg "-mixin.config=seeker_compass.mixins.json"
+
             mods {
-                endergetic {
+                examplemod {
                     source sourceSets.main
                 }
             }
@@ -55,11 +52,15 @@ minecraft {
 
         data {
             workingDirectory project.file('run')
+
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
             property 'forge.logging.console.level', 'debug'
-            args '--mod', 'seeker_compass', '--all', '--output', file('src/generated/resources/')
+
+            args '--mod', 'examplemod', '--all', '--output', file('src/generated/resources/')
+
             mods {
-                endergetic {
+                examplemod {
                     source sourceSets.main
                 }
             }
@@ -74,14 +75,13 @@ dependencies {
 jar {
     manifest {
         attributes([
-                "Specification-Title": "Seeker Compass",
-                "Specification-Vendor": "SmellyModder (Luke Tonon)",
-                "Specification-Version": "1",
-                "Implementation-Title": project.name,
-                "Implementation-Version": "${version}",
-                "Implementation-Vendor": "SmellyModder (Luke Tonon)",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "MixinConfigs": "seeker_compass.mixins.json"
+            "Specification-Title": "examplemod",
+            "Specification-Vendor": "examplemodsareus",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor" :"examplemodsareus",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }

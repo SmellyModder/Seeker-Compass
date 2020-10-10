@@ -5,16 +5,17 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.*;
@@ -36,7 +37,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -235,15 +235,6 @@ public class SeekerCompassItem extends Item {
 							
 							return ActionResult.resultSuccess(stack);
 						}
-					}
-				}
-			} else if (EnchantmentHelper.getEnchantmentLevel(SCEnchants.STALKING.get(), stack) > 0 && !getTargetEntity(player, 8).isPresent()) {
-				if (world instanceof ServerWorld) {
-					Entity entity = this.getEntity((ServerWorld) world, stack);
-
-					if (entity instanceof LivingEntity) {
-						((Stalker) player).setStalkingEntity((LivingEntity) entity);
-						SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new MessageSC2UpdateStalker(entity.getEntityId()));
 					}
 				}
 			}

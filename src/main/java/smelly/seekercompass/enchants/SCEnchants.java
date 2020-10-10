@@ -19,5 +19,4 @@ public class SCEnchants {
 	public static final RegistryObject<Enchantment> WARPING = ENCHANTMENTS.register("warping", WarpingEnchantment::new);
 	public static final RegistryObject<Enchantment> SUMMONING = ENCHANTMENTS.register("summoning", SummoningEnchantment::new);
 	public static final RegistryObject<Enchantment> PERSISTENCE = ENCHANTMENTS.register("persistence", PersistenceEnchantment::new);
-	public static final RegistryObject<Enchantment> STALKING = ENCHANTMENTS.register("stalking", StalkingEnchantment::new);
 }
