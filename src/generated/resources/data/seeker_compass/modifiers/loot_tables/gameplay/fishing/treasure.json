@@ -1,0 +1,32 @@
+{
+  "target": "minecraft:gameplay/fishing/treasure",
+  "modifiers": [
+    {
+      "type": "entries",
+      "config": {
+        "replace": false,
+        "index": 0,
+        "entries": [
+          {
+            "type": "minecraft:item",
+            "functions": [
+              {
+                "function": "minecraft:set_damage",
+                "damage": 0.0
+              }
+            ],
+            "name": "seeker_compass:seeker_compass"
+          }
+        ]
+      }
+    },
+    {
+      "type": "seeker_compass:biased_item_weight",
+      "config": {
+        "index": 0,
+        "bias": 1,
+        "biased_item": "seeker_compass:seeker_compass"
+      }
+    }
+  ]
+}

@@ -51,7 +51,7 @@ minecraft {
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
             property "mixin.env.disableRefMap", "true"
-            args '--mod', 'seeker_compass', '--all', '--output', file('src/generated/resources/')
+            args '--mod', 'seeker_compass', '--all', '--output', file('src/generated/resources/'), '--existing', sourceSets.main.resources.srcDirs[0]
             mods {
                 seeker_compass {
                     source sourceSets.main
@@ -59,6 +59,10 @@ minecraft {
             }
         }
     }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
 }
 
 dependencies {

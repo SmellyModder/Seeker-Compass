@@ -1,28 +1,28 @@
 package net.smelly.seekercompass;
 
-import java.lang.reflect.Array;
-
-import javax.annotation.Nullable;
-
-import net.smelly.seekercompass.enchants.SCEnchants;
-import net.smelly.seekercompass.modification.modifiers.SCLootModifiers;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import com.google.gson.Gson;
+import com.minecraftabnormals.abnormals_core.common.loot.modification.LootModifiers;
+import com.minecraftabnormals.abnormals_core.common.loot.modification.modifiers.LootPoolEntriesModifier;
+import com.minecraftabnormals.abnormals_core.core.util.modification.ConfiguredModifier;
+import com.minecraftabnormals.abnormals_core.core.util.modification.ModifierDataProvider;
+import com.minecraftabnormals.abnormals_core.core.util.modification.TargetedModifier;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.IItemPropertyGetter;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemModelsProperties;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Rarity;
+import net.minecraft.item.*;
+import net.minecraft.loot.ItemLootEntry;
+import net.minecraft.loot.LootPredicateManager;
+import net.minecraft.loot.RandomValueRange;
+import net.minecraft.loot.functions.SetCount;
+import net.minecraft.loot.functions.SetDamage;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
@@ -31,11 +31,22 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.smelly.seekercompass.enchants.SCEnchants;
+import net.smelly.seekercompass.modification.modifiers.BiasedItemWeightModifier;
+import net.smelly.seekercompass.modification.modifiers.SCLootModifiers;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -47,40 +58,48 @@ public class SeekerCompass {
 	public static final Logger LOGGER = LogManager.getLogger(MOD_ID.toUpperCase());
 	public static final String NETWORK_PROTOCOL = "SC1";
 	public static SeekerCompass instance;
-	
+
 	public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder.named(new ResourceLocation(MOD_ID, "net"))
-		.networkProtocolVersion(() -> NETWORK_PROTOCOL)
-		.clientAcceptedVersions(NETWORK_PROTOCOL::equals)
-		.serverAcceptedVersions(NETWORK_PROTOCOL::equals)
-		.simpleChannel();
-	
+			.networkProtocolVersion(() -> NETWORK_PROTOCOL)
+			.clientAcceptedVersions(NETWORK_PROTOCOL::equals)
+			.serverAcceptedVersions(NETWORK_PROTOCOL::equals)
+			.simpleChannel();
+
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).maxStackSize(1).maxDamage(1200).rarity(Rarity.UNCOMMON).group(ItemGroup.TOOLS)));
-	
+
 	public SeekerCompass() {
 		instance = this;
-		
+
 		CHANNEL.messageBuilder(MessageS2CParticle.class, 0)
-		.encoder(MessageS2CParticle::serialize).decoder(MessageS2CParticle::deserialize)
-		.consumer(MessageS2CParticle::handle)
-		.add();
-		
+				.encoder(MessageS2CParticle::serialize).decoder(MessageS2CParticle::deserialize)
+				.consumer(MessageS2CParticle::handle)
+				.add();
+
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(modEventBus);
 		SCEnchants.ENCHANTMENTS.register(modEventBus);
 		SCLootModifiers.load();
-		
+
 		modEventBus.addListener(this::setupCommon);
-		
+		modEventBus.addListener(this::onGatherData);
+
 		DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
 			modEventBus.addListener(EventPriority.LOWEST, this::setupClient);
 		});
 	}
-	
+
 	private void setupCommon(final FMLCommonSetupEvent event) {
 		ItemGroup.TOOLS.setRelevantEnchantmentTypes(add(ItemGroup.TOOLS.getRelevantEnchantmentTypes(), SCEnchants.SEEKER_COMPASS));
 	}
-	
+
+	private void onGatherData(GatherDataEvent event) {
+		DataGenerator dataGenerator = event.getGenerator();
+		if (event.includeServer()) {
+			dataGenerator.addProvider(createLootModifierDataProvider(dataGenerator));
+		}
+	}
+
 	@OnlyIn(Dist.CLIENT)
 	private void setupClient(final FMLClientSetupEvent event) {
 		DeferredWorkQueue.runLater(() -> {
@@ -88,7 +107,7 @@ public class SeekerCompass {
 				private double rotation;
 				private double rota;
 				private long lastUpdateTick;
-				
+
 				@OnlyIn(Dist.CLIENT)
 				public float call(ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity livingEntity) {
 					if (!SeekerCompassItem.isNotBroken(stack)) {
@@ -102,13 +121,13 @@ public class SeekerCompass {
 							if (world == null) {
 								world = (ClientWorld) entity.world;
 							}
-							
+
 							CompoundNBT tag = stack.getTag();
 							if (tag != null && tag.contains("Rotations") && tag.contains("EntityStatus") && !stack.isOnItemFrame()) {
 								return (float) SeekerCompassItem.positiveModulo(SeekerCompassItem.RotationData.read(tag.getCompound("Rotations")).rotation, 1.0F);
 							} else {
 								double randRotation = Math.random();
-								
+
 								if (flag) {
 									randRotation = this.wobble(world, randRotation);
 								}
@@ -118,10 +137,10 @@ public class SeekerCompass {
 						}
 					}
 				}
-				
+
 				@OnlyIn(Dist.CLIENT)
 				private double wobble(ClientWorld world, double rotation) {
-					if(world.getGameTime() != this.lastUpdateTick) {
+					if (world.getGameTime() != this.lastUpdateTick) {
 						this.lastUpdateTick = world.getGameTime();
 						double d0 = rotation - this.rotation;
 						d0 = SeekerCompassItem.positiveModulo(d0 + 0.5D, 1.0D) - 0.5D;
@@ -136,12 +155,32 @@ public class SeekerCompass {
 			ItemModelsProperties.registerProperty(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F);
 		});
 	}
-	
+
 	private static EnchantmentType[] add(EnchantmentType[] array, EnchantmentType element) {
 		int arrayLength = Array.getLength(array);
 		Object newArrayObject = Array.newInstance(array.getClass().getComponentType(), arrayLength + 1);
 		System.arraycopy(array, 0, newArrayObject, 0, arrayLength);
 		array[array.length - 1] = element;
 		return array;
+	}
+
+	private static ModifierDataProvider<LootTableLoadEvent, Gson, Pair<Gson, LootPredicateManager>> createLootModifierDataProvider(DataGenerator dataGenerator) {
+		return LootModifiers.createDataProvider(dataGenerator, "Seeker Compass Loot Modifiers", MOD_ID,
+				new ModifierDataProvider.ProviderEntry<>(
+						new TargetedModifier<>(
+								new ResourceLocation("gameplay/fishing/treasure"),
+								Arrays.asList(
+										new ConfiguredModifier<>(LootModifiers.ENTRIES_MODIFIER, new LootPoolEntriesModifier.Config(false, 0, Collections.singletonList(ItemLootEntry.builder(SEEKER_COMPASS.get()).acceptFunction(SetDamage.func_215931_a(new RandomValueRange(0.0F))).build()))),
+										new ConfiguredModifier<>(SCLootModifiers.BIASED_ITEM_WEIGHT_MODIFIER, new BiasedItemWeightModifier.Config(0, 1, SEEKER_COMPASS))
+								)
+						)
+				),
+				new ModifierDataProvider.ProviderEntry<>(
+						new TargetedModifier<>(
+								new ResourceLocation("chests/nether_bridge"),
+								Collections.singletonList(new ConfiguredModifier<>(LootModifiers.ENTRIES_MODIFIER, new LootPoolEntriesModifier.Config(false, 0, Collections.singletonList(ItemLootEntry.builder(SEEKER_COMPASS.get()).acceptFunction(SetCount.builder(RandomValueRange.of(0.0F, 1.0F))).build()))))
+						)
+				)
+		);
 	}
 }
