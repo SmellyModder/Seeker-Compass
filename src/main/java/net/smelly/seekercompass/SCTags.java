@@ -1,4 +1,4 @@
-package smelly.seekercompass;
+package net.smelly.seekercompass;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.tags.EntityTypeTags;
@@ -10,7 +10,7 @@ public class SCTags {
 		public static final INamedTag<EntityType<?>> SUMMONABLES = createTag("summonables");
 		
 		public static INamedTag<EntityType<?>> createTag(String name) {
-			return EntityTypeTags.func_232896_a_(SeekerCompass.MOD_ID + name);
+			return EntityTypeTags.getTagById(SeekerCompass.MOD_ID + name);
 		}
 	}
 

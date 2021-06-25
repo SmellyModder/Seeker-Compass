@@ -1,4 +1,4 @@
-package smelly.seekercompass.particles;
+package net.smelly.seekercompass.particles;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
@@ -43,9 +43,9 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 		this.particleScale = this.scale * (1f - f * f * 0.5f);
 		
 		Vector3d vec3d = activeInfo.getProjectedView();
-		float f1 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
-		float f2 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
-		float f3 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
+		float f1 = (float)(MathHelper.lerp(partialTicks, this.prevPosX, this.posX) - vec3d.getX());
+		float f2 = (float)(MathHelper.lerp(partialTicks, this.prevPosY, this.posY) - vec3d.getY());
+		float f3 = (float)(MathHelper.lerp(partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
 		
 		Quaternion quaternion = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
 		quaternion.multiply(Vector3f.XP.rotationDegrees(90.0F));
@@ -67,10 +67,10 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 		float f5 = this.getMinV();
 		float f6 = this.getMaxV();
 		int j = this.getBrightnessForRender(partialTicks);
-		buffer.pos((double)avector3f[0].getX(), (double)avector3f[0].getY(), (double)avector3f[0].getZ()).tex(f8, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
-		buffer.pos((double)avector3f[1].getX(), (double)avector3f[1].getY(), (double)avector3f[1].getZ()).tex(f8, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
-		buffer.pos((double)avector3f[2].getX(), (double)avector3f[2].getY(), (double)avector3f[2].getZ()).tex(f7, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
-		buffer.pos((double)avector3f[3].getX(), (double)avector3f[3].getY(), (double)avector3f[3].getZ()).tex(f7, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+		buffer.pos(avector3f[0].getX(), avector3f[0].getY(), avector3f[0].getZ()).tex(f8, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+		buffer.pos(avector3f[1].getX(), avector3f[1].getY(), avector3f[1].getZ()).tex(f8, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+		buffer.pos(avector3f[2].getX(), avector3f[2].getY(), avector3f[2].getZ()).tex(f7, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+		buffer.pos(avector3f[3].getX(), avector3f[3].getY(), avector3f[3].getZ()).tex(f7, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
 	}
 	
 	@Override

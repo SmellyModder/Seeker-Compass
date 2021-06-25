@@ -1,9 +1,10 @@
-package smelly.seekercompass.advancements;
+package net.smelly.seekercompass.advancements;
 
+import com.minecraftabnormals.abnormals_core.common.advancement.EmptyTrigger;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import smelly.seekercompass.SeekerCompass;
+import net.smelly.seekercompass.SeekerCompass;
 
 @EventBusSubscriber(modid = SeekerCompass.MOD_ID)
 public class SCCriteriaTriggers {

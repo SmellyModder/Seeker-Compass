@@ -1,4 +1,4 @@
-package smelly.seekercompass.enchants;
+package net.smelly.seekercompass.enchants;
 
 import net.minecraft.enchantment.Enchantment;
 
@@ -13,7 +13,7 @@ public class SummoningEnchantment extends SeekerCompassEnchant {
 	
 	@Override
 	public boolean canApplyTogether(Enchantment ench) {
-		return (ench instanceof WarpingEnchantment || ench instanceof VoodooEnchantment) ? false : super.canApplyTogether(ench);
+		return (!(ench instanceof WarpingEnchantment) && !(ench instanceof VoodooEnchantment)) && super.canApplyTogether(ench);
 	}
 
 }

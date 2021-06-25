@@ -1,4 +1,4 @@
-package smelly.seekercompass.particles;
+package net.smelly.seekercompass.particles;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 

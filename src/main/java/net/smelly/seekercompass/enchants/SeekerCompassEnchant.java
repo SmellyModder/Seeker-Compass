@@ -1,4 +1,4 @@
-package smelly.seekercompass.enchants;
+package net.smelly.seekercompass.enchants;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.inventory.EquipmentSlotType;

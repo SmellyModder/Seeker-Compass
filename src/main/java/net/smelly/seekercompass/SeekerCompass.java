@@ -1,9 +1,11 @@
-package smelly.seekercompass;
+package net.smelly.seekercompass;
 
 import java.lang.reflect.Array;
 
 import javax.annotation.Nullable;
 
+import net.smelly.seekercompass.enchants.SCEnchants;
+import net.smelly.seekercompass.modification.modifiers.SCLootModifiers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,8 +36,6 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import smelly.seekercompass.SeekerCompassItem.RotationData;
-import smelly.seekercompass.enchants.SCEnchants;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -55,7 +55,7 @@ public class SeekerCompass {
 		.simpleChannel();
 	
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).maxStackSize(1).rarity(Rarity.UNCOMMON).group(ItemGroup.TOOLS)));
+	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).maxStackSize(1).maxDamage(1200).rarity(Rarity.UNCOMMON).group(ItemGroup.TOOLS)));
 	
 	public SeekerCompass() {
 		instance = this;
@@ -68,6 +68,7 @@ public class SeekerCompass {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(modEventBus);
 		SCEnchants.ENCHANTMENTS.register(modEventBus);
+		SCLootModifiers.load();
 		
 		modEventBus.addListener(this::setupCommon);
 		
@@ -83,7 +84,7 @@ public class SeekerCompass {
 	@OnlyIn(Dist.CLIENT)
 	private void setupClient(final FMLClientSetupEvent event) {
 		DeferredWorkQueue.runLater(() -> {
-			ItemModelsProperties.func_239418_a_(SEEKER_COMPASS.get(), new ResourceLocation("angle"), new IItemPropertyGetter() {
+			ItemModelsProperties.registerProperty(SEEKER_COMPASS.get(), new ResourceLocation("angle"), new IItemPropertyGetter() {
 				private double rotation;
 				private double rota;
 				private long lastUpdateTick;
@@ -97,14 +98,14 @@ public class SeekerCompass {
 							return 0.484375F;
 						} else {
 							boolean flag = livingEntity != null;
-							Entity entity = (Entity)(flag ? livingEntity : stack.getItemFrame());
+							Entity entity = flag ? livingEntity : stack.getItemFrame();
 							if (world == null) {
 								world = (ClientWorld) entity.world;
 							}
 							
 							CompoundNBT tag = stack.getTag();
 							if (tag != null && tag.contains("Rotations") && tag.contains("EntityStatus") && !stack.isOnItemFrame()) {
-								return (float) SeekerCompassItem.positiveModulo(getSCRotation(stack), 1.0F);
+								return (float) SeekerCompassItem.positiveModulo(SeekerCompassItem.RotationData.read(tag.getCompound("Rotations")).rotation, 1.0F);
 							} else {
 								double randRotation = Math.random();
 								
@@ -132,22 +133,15 @@ public class SeekerCompass {
 					return this.rotation;
 				}
 			});
-			ItemModelsProperties.func_239418_a_(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> {
-				return SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F;
-			});
+			ItemModelsProperties.registerProperty(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F);
 		});
 	}
 	
-	private static double getSCRotation(ItemStack stack) {
-		return RotationData.read(stack.getTag().getCompound("Rotations")).rotation;
-	}
-	
 	private static EnchantmentType[] add(EnchantmentType[] array, EnchantmentType element) {
-		EnchantmentType[] newArray = array;
-		int arrayLength = Array.getLength(newArray);
-		Object newArrayObject = Array.newInstance(newArray.getClass().getComponentType(), arrayLength + 1);
+		int arrayLength = Array.getLength(array);
+		Object newArrayObject = Array.newInstance(array.getClass().getComponentType(), arrayLength + 1);
 		System.arraycopy(array, 0, newArrayObject, 0, arrayLength);
-		newArray[newArray.length - 1] = element;
-		return newArray;
+		array[array.length - 1] = element;
+		return array;
 	}
 }

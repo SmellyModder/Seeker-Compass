@@ -1,4 +1,4 @@
-package smelly.seekercompass;
+package net.smelly.seekercompass;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,18 +25,14 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -46,8 +42,8 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.PacketDistributor;
-import smelly.seekercompass.advancements.SCCriteriaTriggers;
-import smelly.seekercompass.enchants.SCEnchants;
+import net.smelly.seekercompass.advancements.SCCriteriaTriggers;
+import net.smelly.seekercompass.enchants.SCEnchants;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -62,7 +58,7 @@ public class SeekerCompassItem extends Item {
 	public SeekerCompassItem(Properties properties) {
 		super(properties);
 	}
-	
+
 	@Override
 	public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
 		if (!world.isRemote && isNotBroken(stack)) {
@@ -113,7 +109,7 @@ public class SeekerCompassItem extends Item {
 					
 					double turn;
 					if (tag.contains(ENTITY_TAG)) {
-						double yaw = (double) entity.rotationYaw;
+						double yaw = entity.rotationYaw;
 						yaw = positiveModulo(yaw / 360.0D, 1.0D);
 						double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float)Math.PI * 2F);
 						turn = 0.5D - (yaw - 0.25D - angle);
@@ -130,7 +126,7 @@ public class SeekerCompassItem extends Item {
 					
 					double turn;
 					if (tag.contains(ENTITY_TAG)) {
-						double yaw = (double) entity.rotationYaw;
+						double yaw = entity.rotationYaw;
 						yaw = positiveModulo(yaw / 360.0D, 1.0D);
 						double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float)Math.PI * 2F);
 						turn = 0.5D - (yaw - 0.25D - angle);
@@ -169,9 +165,10 @@ public class SeekerCompassItem extends Item {
 			tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.health").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(String.valueOf(status.health)).mergeStyle(TextFormatting.GREEN)));
 		
 			if (EnchantmentHelper.getEnchantmentLevel(SCEnchants.TRACKING.get(), stack) > 0) {
-				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.blockpos").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(status.pos.func_229422_x_())));
+				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.blockpos").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(status.pos.getCoordinatesAsString())));
 				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.standing_on").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(I18n.format(world.getBlockState(status.pos.down()).getBlock().getTranslationKey()))));
-				tooltip.add((new TranslationTextComponent("tooltip.seeker_compass.biome").mergeStyle(TextFormatting.GRAY)).append(new StringTextComponent(I18n.format(world.getBiome(status.pos).getTranslationKey()))));
+				ResourceLocation biomeKey = world.func_241828_r().getRegistry(Registry.BIOME_KEY).getKey(world.getBiome(status.pos));
+				tooltip.add(new TranslationTextComponent("tooltip.seeker_compass.biome").mergeStyle(TextFormatting.GRAY).append(new TranslationTextComponent(biomeKey != null ? "biome." + biomeKey.getNamespace() + "." + biomeKey.getPath() : "Unknown")));
 			}
 		}
 	}
@@ -237,7 +234,6 @@ public class SeekerCompassItem extends Item {
 						if (player.attemptTeleport(x, y, z, false)) {
 							player.fallDistance = 0.0F;
 							world.playSound(null, x, y, z, SoundEvents.ENTITY_SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
-							pos = player.getPositionVec();
 							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", player.getPosX(), player.getPosY(), player.getPosZ(), 0.0F, 0.0F, 0.0F));
 							
 							if (!player.isCreative()) {
@@ -343,11 +339,6 @@ public class SeekerCompassItem extends Item {
 	}
 	
 	@Override
-	public int getMaxDamage(ItemStack stack) {
-		return 1200;
-	}
-	
-	@Override
 	public int getRGBDurabilityForDisplay(ItemStack stack) {
 		return 16743936;
 	}
@@ -396,14 +387,14 @@ public class SeekerCompassItem extends Item {
 			return Optional.empty();
 		} else {
 			Vector3d Vector3d = entityIn.getEyePosition(1.0F);
-			Vector3d Vector3d1 = entityIn.getLook(1.0F).scale((double)distance);
+			Vector3d Vector3d1 = entityIn.getLook(1.0F).scale(distance);
 			Vector3d Vector3d2 = Vector3d.add(Vector3d1);
 			AxisAlignedBB axisalignedbb = entityIn.getBoundingBox().expand(Vector3d1).grow(1.0D);
 			int i = distance * distance;
 			Predicate<Entity> predicate = (p_217727_0_) -> {
 				return !p_217727_0_.isSpectator() && p_217727_0_.canBeCollidedWith();
 			};
-			EntityRayTraceResult entityraytraceresult = rayTraceEntities(entityIn, Vector3d, Vector3d2, axisalignedbb, predicate, (double)i);
+			EntityRayTraceResult entityraytraceresult = rayTraceEntities(entityIn, Vector3d, Vector3d2, axisalignedbb, predicate, i);
 			if (entityraytraceresult == null) {
 				return Optional.empty();
 			} else {
@@ -420,7 +411,7 @@ public class SeekerCompassItem extends Item {
 		Vector3d Vector3d = null;
 
 		for(Entity entity1 : world.getEntitiesInAABBexcluding(player, p_221273_3_, p_221273_4_)) {
-			AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double)entity1.getCollisionBorderSize());
+			AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow(entity1.getCollisionBorderSize());
 			Optional<Vector3d> optional = axisalignedbb.rayTrace(p_221273_1_, p_221273_2_);
 			if (axisalignedbb.contains(p_221273_1_)) {
 				if (d0 >= 0.0D) {
@@ -469,7 +460,7 @@ public class SeekerCompassItem extends Item {
 		}
 		
 		public static EntityStatusData read(CompoundNBT compound) {
-			return new EntityStatusData(compound.getBoolean("Alive"), compound.getFloat("Health"), compound.getString("EntityType"), compound.getString("EntityName"), NBTUtil.readBlockPos((CompoundNBT) compound.get("Pos")));
+			return new EntityStatusData(compound.getBoolean("Alive"), compound.getFloat("Health"), compound.getString("EntityType"), compound.getString("EntityName"), NBTUtil.readBlockPos(compound.getCompound("Pos")));
 		}
 		
 		public static CompoundNBT write(Entity trackingEntity) {

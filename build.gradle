@@ -12,25 +12,23 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '2.0.2'
-group = 'smelly.seeker_compass'
-archivesBaseName = 'Seeker-Compass-1.16.1-v2.0.2'
+version = "${project.minecraft}-${project.modVersion}"
+group = "net.smelly"
+archivesBaseName = project.modId
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200723-1.16.1'
+    mappings channel: project.mappingsChannel, version: project.mappings
     
     runs {
         client {
             workingDirectory project.file('run')
-
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
             property 'forge.logging.console.level', 'debug'
-
+            property "mixin.env.disableRefMap", "true"
             mods {
-                examplemod {
+                seeker_compass {
                     source sourceSets.main
                 }
             }
@@ -38,13 +36,11 @@ minecraft {
 
         server {
             workingDirectory project.file('run')
-
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
             property 'forge.logging.console.level', 'debug'
-
+            property "mixin.env.disableRefMap", "true"
             mods {
-                examplemod {
+                seeker_compass {
                     source sourceSets.main
                 }
             }
@@ -52,15 +48,12 @@ minecraft {
 
         data {
             workingDirectory project.file('run')
-
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
             property 'forge.logging.console.level', 'debug'
-
-            args '--mod', 'examplemod', '--all', '--output', file('src/generated/resources/')
-
+            property "mixin.env.disableRefMap", "true"
+            args '--mod', 'seeker_compass', '--all', '--output', file('src/generated/resources/')
             mods {
-                examplemod {
+                seeker_compass {
                     source sourceSets.main
                 }
             }
@@ -69,18 +62,24 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.1-32.0.72'
+    minecraft "net.minecraftforge:forge:${project.minecraft}-${project.forge}"
+
+    implementation fg.deobf("com.minecraftabnormals:abnormals-core:${project.minecraft}-${project.abnormalsCore}")
+}
+
+repositories {
+    maven { url = "https://maven.jaackson.me" }
 }
 
 jar {
     manifest {
         attributes([
-            "Specification-Title": "examplemod",
-            "Specification-Vendor": "examplemodsareus",
+            "Specification-Title": "Seeker Compass",
+            "Specification-Vendor": "SmellyModder (Luke Tonon)",
             "Specification-Version": "1",
-            "Implementation-Title": project.name,
-            "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"examplemodsareus",
+            "Implementation-Title": project.modName,
+            "Implementation-Version": "${project.modVersion}",
+            "Implementation-Vendor" :"SmellyModder (Luke Tonon)",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }

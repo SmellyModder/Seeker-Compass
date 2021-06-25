@@ -1,4 +1,4 @@
-package smelly.seekercompass;
+package net.smelly.seekercompass;
 
 import java.util.Random;
 import java.util.stream.Stream;
@@ -159,11 +159,7 @@ public class SCEvents {
 				return true;
 			}
 		}
-		
-		if (spawnChunks.anyMatch(chunk -> chunk.equals(pos))) {
-			return true;
-		}
-		
-		return false;
+
+		return spawnChunks.anyMatch(chunk -> chunk.equals(pos));
 	}
 }

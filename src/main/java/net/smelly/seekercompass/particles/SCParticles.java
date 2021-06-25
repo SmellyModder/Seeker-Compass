@@ -1,4 +1,4 @@
-package smelly.seekercompass.particles;
+package net.smelly.seekercompass.particles;
 
 import net.minecraft.client.Minecraft;
 
@@ -10,7 +10,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import smelly.seekercompass.SeekerCompass;
+import net.smelly.seekercompass.SeekerCompass;
 
 /**
  * @author SmellyModder(Luke Tonon)

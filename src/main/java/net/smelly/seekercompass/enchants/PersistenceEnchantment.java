@@ -1,4 +1,4 @@
-package smelly.seekercompass.enchants;
+package net.smelly.seekercompass.enchants;
 
 public class PersistenceEnchantment extends SeekerCompassEnchant {
 

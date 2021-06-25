@@ -1,4 +1,4 @@
-package smelly.seekercompass;
+package net.smelly.seekercompass;
 
 import java.util.function.Supplier;
 
