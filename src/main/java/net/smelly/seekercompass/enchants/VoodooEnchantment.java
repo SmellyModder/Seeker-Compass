@@ -13,12 +13,12 @@ public class VoodooEnchantment extends SeekerCompassEnchant {
 	}
 	
 	@Override
-	public int getMinEnchantability(int enchantmentLevel) {
+	public int getMinCost(int enchantmentLevel) {
 		return 20;
 	}
 	
 	@Override
-	public int getMaxEnchantability(int enchantmentLevel) {
+	public int getMaxCost(int enchantmentLevel) {
 		return 60;
 	}
 	
@@ -28,8 +28,8 @@ public class VoodooEnchantment extends SeekerCompassEnchant {
 	}
 	
 	@Override
-	public boolean canApplyTogether(Enchantment ench) {
-		return (!(ench instanceof MendingEnchantment) && !(ench instanceof WarpingEnchantment) && !(ench instanceof SummoningEnchantment)) && super.canApplyTogether(ench);
+	public boolean checkCompatibility(Enchantment ench) {
+		return (!(ench instanceof MendingEnchantment) && !(ench instanceof WarpingEnchantment) && !(ench instanceof SummoningEnchantment)) && super.checkCompatibility(ench);
 	}
 
 }

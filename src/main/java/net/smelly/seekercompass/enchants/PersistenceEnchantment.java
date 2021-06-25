@@ -7,12 +7,12 @@ public class PersistenceEnchantment extends SeekerCompassEnchant {
 	}
 	
 	@Override
-	public int getMinEnchantability(int enchantmentLevel) {
+	public int getMinCost(int enchantmentLevel) {
 		return 30;
 	}
 	
 	@Override
-	public int getMaxEnchantability(int enchantmentLevel) {
+	public int getMaxCost(int enchantmentLevel) {
 		return 60;
 	}
 

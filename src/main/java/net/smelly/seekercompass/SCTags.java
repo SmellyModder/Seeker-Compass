@@ -10,7 +10,7 @@ public class SCTags {
 		public static final INamedTag<EntityType<?>> SUMMONABLES = createTag("summonables");
 		
 		public static INamedTag<EntityType<?>> createTag(String name) {
-			return EntityTypeTags.getTagById(SeekerCompass.MOD_ID + name);
+			return EntityTypeTags.bind(SeekerCompass.MOD_ID + name);
 		}
 	}
 

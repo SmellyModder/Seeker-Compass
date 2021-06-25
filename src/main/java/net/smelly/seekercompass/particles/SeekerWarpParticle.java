@@ -27,33 +27,33 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 
 	public SeekerWarpParticle(IAnimatedSprite animatedSprite, ClientWorld world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
 		super(world, posX, posY, posZ, motionX, motionY, motionZ);
-		this.scale = this.particleScale = 1.0F;
-		this.particleRed = 1.0F;
-		this.particleGreen = 1.0F;
-		this.particleBlue = 1.0F;
-		this.motionX = this.motionY = this.motionZ = 0.0F;
-		this.maxAge = 20;
+		this.scale = this.quadSize = 1.0F;
+		this.rCol = 1.0F;
+		this.gCol = 1.0F;
+		this.bCol = 1.0F;
+		this.xd = this.yd = this.zd = 0.0F;
+		this.lifetime = 20;
 		this.animatedSprite = animatedSprite;
-		this.selectSpriteWithAge(animatedSprite);
+		this.setSpriteFromAge(animatedSprite);
 	}
 	
 	@Override
-	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo activeInfo, float partialTicks) {
-		float f = ((float) this.age + partialTicks) / (float) this.maxAge;
-		this.particleScale = this.scale * (1f - f * f * 0.5f);
+	public void render(IVertexBuilder buffer, ActiveRenderInfo activeInfo, float partialTicks) {
+		float f = ((float) this.age + partialTicks) / (float) this.lifetime;
+		this.quadSize = this.scale * (1f - f * f * 0.5f);
 		
-		Vector3d vec3d = activeInfo.getProjectedView();
-		float f1 = (float)(MathHelper.lerp(partialTicks, this.prevPosX, this.posX) - vec3d.getX());
-		float f2 = (float)(MathHelper.lerp(partialTicks, this.prevPosY, this.posY) - vec3d.getY());
-		float f3 = (float)(MathHelper.lerp(partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
+		Vector3d vec3d = activeInfo.getPosition();
+		float f1 = (float)(MathHelper.lerp(partialTicks, this.xo, this.x) - vec3d.x());
+		float f2 = (float)(MathHelper.lerp(partialTicks, this.yo, this.y) - vec3d.y());
+		float f3 = (float)(MathHelper.lerp(partialTicks, this.zo, this.z) - vec3d.z());
 		
 		Quaternion quaternion = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
-		quaternion.multiply(Vector3f.XP.rotationDegrees(90.0F));
+		quaternion.mul(Vector3f.XP.rotationDegrees(90.0F));
 		
 		Vector3f vector3f1 = new Vector3f(-1.0F, -1.0F, 0.0F);
 		vector3f1.transform(quaternion);
 		Vector3f[] avector3f = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
-		float f4 = this.getScale(partialTicks);
+		float f4 = this.getQuadSize(partialTicks);
 
 		for(int i = 0; i < 4; ++i) {
 			Vector3f vector3f = avector3f[i];
@@ -62,23 +62,23 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 			vector3f.add(f1, f2, f3);
 		}
 
-		float f7 = this.getMinU();
-		float f8 = this.getMaxU();
-		float f5 = this.getMinV();
-		float f6 = this.getMaxV();
-		int j = this.getBrightnessForRender(partialTicks);
-		buffer.pos(avector3f[0].getX(), avector3f[0].getY(), avector3f[0].getZ()).tex(f8, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
-		buffer.pos(avector3f[1].getX(), avector3f[1].getY(), avector3f[1].getZ()).tex(f8, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
-		buffer.pos(avector3f[2].getX(), avector3f[2].getY(), avector3f[2].getZ()).tex(f7, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
-		buffer.pos(avector3f[3].getX(), avector3f[3].getY(), avector3f[3].getZ()).tex(f7, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+		float f7 = this.getU0();
+		float f8 = this.getU1();
+		float f5 = this.getV0();
+		float f6 = this.getV1();
+		int j = this.getLightColor(partialTicks);
+		buffer.vertex(avector3f[0].x(), avector3f[0].y(), avector3f[0].z()).uv(f8, f6).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+		buffer.vertex(avector3f[1].x(), avector3f[1].y(), avector3f[1].z()).uv(f8, f5).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+		buffer.vertex(avector3f[2].x(), avector3f[2].y(), avector3f[2].z()).uv(f7, f5).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+		buffer.vertex(avector3f[3].x(), avector3f[3].y(), avector3f[3].z()).uv(f7, f6).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
 	}
 	
 	@Override
     public void tick() {
 		super.tick();
-		this.prevParticleAngle = this.particleAngle;
+		this.oRoll = this.roll;
 		
-		if(this.isAlive()) this.selectSpriteWithAge(this.animatedSprite);
+		if(this.isAlive()) this.setSpriteFromAge(this.animatedSprite);
 	}
 	
 	@Override
@@ -87,7 +87,7 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 	}
 	
 	@Override
-	public int getBrightnessForRender(float partialTick) {
+	public int getLightColor(float partialTick) {
 		return 240;
     }
 	
@@ -99,7 +99,7 @@ public class SeekerWarpParticle extends SpriteTexturedParticle {
 		}
     	
 		@Override
-		public Particle makeParticle(BasicParticleType type, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+		public Particle createParticle(BasicParticleType type, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
 			return new SeekerWarpParticle(this.animatedSprite, world, x, y + 0.01F, z, xSpeed, ySpeed, zSpeed);
 		}
 	}

@@ -10,12 +10,12 @@ public class TrackingEnchantment extends SeekerCompassEnchant {
 	}
 	
 	@Override
-	public int getMinEnchantability(int enchantmentLevel) {
+	public int getMinCost(int enchantmentLevel) {
 		return 10;
 	}
 
 	@Override
-	public int getMaxEnchantability(int enchantmentLevel) {
+	public int getMaxCost(int enchantmentLevel) {
 		return 30;
 	}
 

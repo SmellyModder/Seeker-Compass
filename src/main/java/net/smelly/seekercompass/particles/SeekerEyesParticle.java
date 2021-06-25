@@ -14,6 +14,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nullable;
+
 /**
  * @author SmellyModder(Luke Tonon)
  */
@@ -24,31 +26,31 @@ public class SeekerEyesParticle extends SpriteTexturedParticle {
 
 	public SeekerEyesParticle(IAnimatedSprite animatedSprite, ClientWorld world, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
 		super(world, posX, posY, posZ, motionX, motionY, motionZ);
-		this.scale = this.particleScale = this.rand.nextFloat() * 0.6F + 0.2F;
-		this.particleRed = 1.0F;
-		this.particleGreen = 1.0F;
-		this.particleBlue = 1.0F;
-		this.motionX = motionX * (double)0.2F + (Math.random() * 2.0D - 1.0D) * (double)0.01F;
-		this.motionY = motionY * (double)0.2F + (Math.random() * 2.0D - 1.0D) * (double)0.01F;
-		this.motionZ = motionZ * (double)0.2F + (Math.random() * 2.0D - 1.0D) * (double)0.01F;
-		this.maxAge = 20;
+		this.scale = this.quadSize = this.random.nextFloat() * 0.6F + 0.2F;
+		this.rCol = 1.0F;
+		this.gCol = 1.0F;
+		this.bCol = 1.0F;
+		this.xd = motionX * (double)0.2F + (Math.random() * 2.0D - 1.0D) * (double)0.01F;
+		this.yd = motionY * (double)0.2F + (Math.random() * 2.0D - 1.0D) * (double)0.01F;
+		this.zd = motionZ * (double)0.2F + (Math.random() * 2.0D - 1.0D) * (double)0.01F;
+		this.lifetime = 20;
 		this.animatedSprite = animatedSprite;
-		this.selectSpriteWithAge(animatedSprite);
+		this.setSpriteFromAge(animatedSprite);
 	}
 	
 	@Override
-	public void renderParticle(IVertexBuilder p_225606_1_, ActiveRenderInfo activeInfo, float partialTicks) {
-		float f = ((float) this.age + partialTicks) / (float) this.maxAge;
-		this.particleScale = this.scale * (1f - f * f * 0.5f);
-		super.renderParticle(p_225606_1_, activeInfo, partialTicks);
+	public void render(IVertexBuilder p_225606_1_, ActiveRenderInfo activeInfo, float partialTicks) {
+		float f = ((float) this.age + partialTicks) / (float) this.lifetime;
+		this.quadSize = this.scale * (1f - f * f * 0.5f);
+		super.render(p_225606_1_, activeInfo, partialTicks);
 	}
 	
 	@Override
     public void tick() {
 		super.tick();
-		this.prevParticleAngle = this.particleAngle;
+		this.oRoll = this.roll;
 		
-		if (this.isAlive()) this.selectSpriteWithAge(this.animatedSprite);
+		if (this.isAlive()) this.setSpriteFromAge(this.animatedSprite);
 	}
 	
 	@Override
@@ -57,10 +59,10 @@ public class SeekerEyesParticle extends SpriteTexturedParticle {
 	}
 	
 	@Override
-	public int getBrightnessForRender(float partialTick) {
-		float f = ((float) this.age + partialTick) / (float) this.maxAge;
+	public int getLightColor(float partialTick) {
+		float f = ((float) this.age + partialTick) / (float) this.lifetime;
 		f = MathHelper.clamp(f, 0f, 1f);
-		int i = super.getBrightnessForRender(partialTick);
+		int i = super.getLightColor(partialTick);
 		int j = i & 255;
 		int k = i >> 16 & 255;
 		j = j + (int) (f * 15f * 16f);
@@ -76,10 +78,11 @@ public class SeekerEyesParticle extends SpriteTexturedParticle {
 		public Factory(IAnimatedSprite animatedSprite) {
 			this.animatedSprite = animatedSprite;
 		}
-    	
+
+		@Nullable
 		@Override
-		public Particle makeParticle(BasicParticleType type, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-			return new SeekerEyesParticle(this.animatedSprite, world, x, y, z, xSpeed, ySpeed, zSpeed);
+		public Particle createParticle(BasicParticleType basicParticleType, ClientWorld world, double v, double v1, double v2, double v3, double v4, double v5) {
+			return new SeekerEyesParticle(this.animatedSprite, world, v, v1, v2, v3, v4, v5);
 		}
 	}
 }

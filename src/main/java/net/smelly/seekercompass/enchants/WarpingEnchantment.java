@@ -12,18 +12,18 @@ public class WarpingEnchantment extends SeekerCompassEnchant {
 	}
 	
 	@Override
-	public int getMinEnchantability(int enchantmentLevel) {
+	public int getMinCost(int enchantmentLevel) {
 		return 40;
 	}
 
 	@Override
-	public int getMaxEnchantability(int enchantmentLevel) {
+	public int getMaxCost(int enchantmentLevel) {
 		return 60;
 	}
 	
 	@Override
-	protected boolean canApplyTogether(Enchantment ench) {
-		return (!(ench instanceof VoodooEnchantment) && !(ench instanceof SummoningEnchantment)) && super.canApplyTogether(ench);
+	protected boolean checkCompatibility(Enchantment ench) {
+		return (!(ench instanceof VoodooEnchantment) && !(ench instanceof SummoningEnchantment)) && super.checkCompatibility(ench);
 	}
 
 }

@@ -13,7 +13,7 @@ public abstract class SeekerCompassEnchant extends Enchantment {
 	}
 	
 	@Override
-	public boolean isTreasureEnchantment() {
+	public boolean isTreasureOnly() {
 		return true;
 	}
 

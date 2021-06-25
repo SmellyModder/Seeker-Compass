@@ -43,8 +43,8 @@ public class SCParticles {
 		@SubscribeEvent(priority = EventPriority.LOWEST)
 		public static void registerParticleTypes(ParticleFactoryRegisterEvent event) {
 			Minecraft MC = Minecraft.getInstance();
-			MC.particles.registerFactory(SEEKER_EYES, SeekerEyesParticle.Factory::new);
-			MC.particles.registerFactory(SEEKER_WARP, SeekerWarpParticle.Factory::new);
+			MC.particleEngine.register(SEEKER_EYES, SeekerEyesParticle.Factory::new);
+			MC.particleEngine.register(SEEKER_WARP, SeekerWarpParticle.Factory::new);
 		}
 		
 	}

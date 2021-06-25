@@ -12,8 +12,8 @@ public class SummoningEnchantment extends SeekerCompassEnchant {
 	}
 	
 	@Override
-	public boolean canApplyTogether(Enchantment ench) {
-		return (!(ench instanceof WarpingEnchantment) && !(ench instanceof VoodooEnchantment)) && super.canApplyTogether(ench);
+	public boolean checkCompatibility(Enchantment ench) {
+		return (!(ench instanceof WarpingEnchantment) && !(ench instanceof VoodooEnchantment)) && super.checkCompatibility(ench);
 	}
 
 }

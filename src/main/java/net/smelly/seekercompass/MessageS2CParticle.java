@@ -31,7 +31,7 @@ public class MessageS2CParticle {
 	}
 	
 	public void serialize(PacketBuffer buf) {
-		buf.writeString(this.particleName);
+		buf.writeUtf(this.particleName);
 		buf.writeDouble(this.posX);
 		buf.writeDouble(this.posY);
 		buf.writeDouble(this.posZ);
@@ -41,7 +41,7 @@ public class MessageS2CParticle {
 	}
 	
 	public static MessageS2CParticle deserialize(PacketBuffer buf) {
-		String particleName = buf.readString();
+		String particleName = buf.readUtf();
 		double posX = buf.readDouble();
 		double posY = buf.readDouble();
 		double posZ = buf.readDouble();
@@ -55,7 +55,7 @@ public class MessageS2CParticle {
 		NetworkEvent.Context context = ctx.get();
 		if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 			context.enqueueWork(() -> {
-				World world = Minecraft.getInstance().player.world;
+				World world = Minecraft.getInstance().player.level;
 				BasicParticleType particleType = (BasicParticleType) ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation(message.particleName));
 				
 				if (particleType != null) {

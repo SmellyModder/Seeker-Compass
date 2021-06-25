@@ -66,7 +66,7 @@ public class SeekerCompass {
 			.simpleChannel();
 
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).maxStackSize(1).maxDamage(1200).rarity(Rarity.UNCOMMON).group(ItemGroup.TOOLS)));
+	public static final RegistryObject<Item> SEEKER_COMPASS = ITEMS.register("seeker_compass", () -> new SeekerCompassItem((new Item.Properties()).stacksTo(1).durability(1200).rarity(Rarity.UNCOMMON).tab(ItemGroup.TAB_TOOLS)));
 
 	public SeekerCompass() {
 		instance = this;
@@ -90,7 +90,7 @@ public class SeekerCompass {
 	}
 
 	private void setupCommon(final FMLCommonSetupEvent event) {
-		ItemGroup.TOOLS.setRelevantEnchantmentTypes(add(ItemGroup.TOOLS.getRelevantEnchantmentTypes(), SCEnchants.SEEKER_COMPASS));
+		ItemGroup.TAB_TOOLS.setEnchantmentCategories(add(ItemGroup.TAB_TOOLS.getEnchantmentCategories(), SCEnchants.SEEKER_COMPASS));
 	}
 
 	private void onGatherData(GatherDataEvent event) {
@@ -103,7 +103,7 @@ public class SeekerCompass {
 	@OnlyIn(Dist.CLIENT)
 	private void setupClient(final FMLClientSetupEvent event) {
 		DeferredWorkQueue.runLater(() -> {
-			ItemModelsProperties.registerProperty(SEEKER_COMPASS.get(), new ResourceLocation("angle"), new IItemPropertyGetter() {
+			ItemModelsProperties.register(SEEKER_COMPASS.get(), new ResourceLocation("angle"), new IItemPropertyGetter() {
 				private double rotation;
 				private double rota;
 				private long lastUpdateTick;
@@ -113,17 +113,17 @@ public class SeekerCompass {
 					if (!SeekerCompassItem.isNotBroken(stack)) {
 						return 0.0F;
 					} else {
-						if (livingEntity == null && !stack.isOnItemFrame()) {
+						if (livingEntity == null && !stack.isFramed()) {
 							return 0.484375F;
 						} else {
 							boolean flag = livingEntity != null;
-							Entity entity = flag ? livingEntity : stack.getItemFrame();
+							Entity entity = flag ? livingEntity : stack.getFrame();
 							if (world == null) {
-								world = (ClientWorld) entity.world;
+								world = (ClientWorld) entity.level;
 							}
 
 							CompoundNBT tag = stack.getTag();
-							if (tag != null && tag.contains("Rotations") && tag.contains("EntityStatus") && !stack.isOnItemFrame()) {
+							if (tag != null && tag.contains("Rotations") && tag.contains("EntityStatus") && !stack.isFramed()) {
 								return (float) SeekerCompassItem.positiveModulo(SeekerCompassItem.RotationData.read(tag.getCompound("Rotations")).rotation, 1.0F);
 							} else {
 								double randRotation = Math.random();
@@ -152,7 +152,7 @@ public class SeekerCompass {
 					return this.rotation;
 				}
 			});
-			ItemModelsProperties.registerProperty(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F);
+			ItemModelsProperties.register(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F);
 		});
 	}
 
@@ -170,7 +170,7 @@ public class SeekerCompass {
 						new TargetedModifier<>(
 								new ResourceLocation("gameplay/fishing/treasure"),
 								Arrays.asList(
-										new ConfiguredModifier<>(LootModifiers.ENTRIES_MODIFIER, new LootPoolEntriesModifier.Config(false, 0, Collections.singletonList(ItemLootEntry.builder(SEEKER_COMPASS.get()).acceptFunction(SetDamage.func_215931_a(new RandomValueRange(0.0F))).build()))),
+										new ConfiguredModifier<>(LootModifiers.ENTRIES_MODIFIER, new LootPoolEntriesModifier.Config(false, 0, Collections.singletonList(ItemLootEntry.lootTableItem(SEEKER_COMPASS.get()).apply(SetDamage.setDamage(new RandomValueRange(0.0F))).build()))),
 										new ConfiguredModifier<>(SCLootModifiers.BIASED_ITEM_WEIGHT_MODIFIER, new BiasedItemWeightModifier.Config(0, 1, SEEKER_COMPASS))
 								)
 						)
@@ -178,7 +178,7 @@ public class SeekerCompass {
 				new ModifierDataProvider.ProviderEntry<>(
 						new TargetedModifier<>(
 								new ResourceLocation("chests/nether_bridge"),
-								Collections.singletonList(new ConfiguredModifier<>(LootModifiers.ENTRIES_MODIFIER, new LootPoolEntriesModifier.Config(false, 0, Collections.singletonList(ItemLootEntry.builder(SEEKER_COMPASS.get()).acceptFunction(SetCount.builder(RandomValueRange.of(0.0F, 1.0F))).build()))))
+								Collections.singletonList(new ConfiguredModifier<>(LootModifiers.ENTRIES_MODIFIER, new LootPoolEntriesModifier.Config(false, 0, Collections.singletonList(ItemLootEntry.lootTableItem(SEEKER_COMPASS.get()).apply(SetCount.setCount(RandomValueRange.between(0.0F, 1.0F))).build()))))
 						)
 				)
 		);
