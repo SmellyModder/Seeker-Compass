@@ -44,6 +44,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.smelly.seekercompass.advancements.SCCriteriaTriggers;
 import net.smelly.seekercompass.enchants.SCEnchants;
+import net.smelly.seekercompass.interfaces.Stalker;
+import net.smelly.seekercompass.network.S2CParticleMessage;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -63,79 +65,95 @@ public class SeekerCompassItem extends Item {
 	public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
 		if (!world.isClientSide && isNotBroken(stack)) {
 			CompoundNBT tag = stack.getTag();
-			
-			if (world.getGameTime() % 20 == 0 && entity instanceof PlayerEntity && tag != null && tag.contains(TRACKING_TAG)) {
-				PlayerEntity player = (PlayerEntity) entity;
-				stack.hurtAndBreak(1, player, (living) -> living.broadcastBreakEvent(player.getUsedItemHand()));
-			}
-			
-			if (tag != null && tag.contains(VOODOO_TAG)) {
-				VoodooData data = getVoodooData(tag);
-				if (data.timer > 0) {
-					tag.put(VOODOO_TAG, VoodooData.write(new VoodooData(data.timesUsed, data.timer - 1)));
-				} else {
-					if (data.timesUsed >= 9) {
+			if (tag != null) {
+				if (tag.contains(VOODOO_TAG)) {
+					VoodooData data = getVoodooData(tag);
+					if (data.timer > 0) {
+						tag.put(VOODOO_TAG, VoodooData.write(new VoodooData(data.timesUsed, data.timer - 1)));
+					} else if (data.timesUsed >= 9) {
 						tag.put(VOODOO_TAG, VoodooData.write(new VoodooData(0, 0)));
 					}
 				}
-			}
-			
-			if (tag != null && tag.contains(TRACKING_TAG)) {
-				Entity trackingEntity = this.getEntity((ServerWorld) world, stack);
-				if (trackingEntity != null) {
-					tag.put(ENTITY_TAG, EntityStatusData.write(trackingEntity));
-					
-					CompoundNBT persistantData = trackingEntity.getPersistentData();
-					persistantData.putBoolean(SCEvents.TAG_CHUNK_UPDATE, true);
-					persistantData.putInt(SCEvents.TAG_CHUNK_TIMER, 20);
-					
-					if (EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.PERSISTENCE.get(), stack) > 0 && trackingEntity instanceof MobEntity) {
-						((MobEntity) trackingEntity).setPersistenceRequired();
+
+				if (tag.contains(TRACKING_TAG)) {
+					Entity trackingEntity = this.getEntity((ServerWorld) world, stack);
+					if (trackingEntity != null) {
+						if (entity instanceof ServerPlayerEntity) {
+							int damage = 1;
+							Stalker stalker = (Stalker) entity;
+							if (EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.STALKING.get(), stack) > 0) {
+								if (stalker.getStalkingEntity() == trackingEntity) {
+									stalker.setShouldBeStalking(true);
+									damage = 10;
+								}
+							}
+							if (world.getGameTime() % 20 == 0 && stack.isDamageableItem()) {
+								ServerPlayerEntity player = (ServerPlayerEntity) entity;
+								if (!player.abilities.instabuild) {
+									int maxDamage = stack.getMaxDamage() - 1;
+									stack.hurt(damage, player.getRandom(), player);
+									stack.setDamageValue(MathHelper.clamp(stack.getDamageValue(), 0, maxDamage));
+									if (stack.getDamageValue() == maxDamage) {
+										player.playNotifySound(SoundEvents.SHIELD_BREAK, SoundCategory.PLAYERS, 0.5F, 1.5F);
+									}
+								}
+							}
+						}
+
+						tag.put(ENTITY_TAG, EntityStatusData.write(trackingEntity));
+
+						CompoundNBT persistantData = trackingEntity.getPersistentData();
+						persistantData.putBoolean(SCEvents.TAG_CHUNK_UPDATE, true);
+						persistantData.putInt(SCEvents.TAG_CHUNK_TIMER, 20);
+
+						if (EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.PERSISTENCE.get(), stack) > 0 && trackingEntity instanceof MobEntity) {
+							((MobEntity) trackingEntity).setPersistenceRequired();
+						}
+					} else if (tag.contains(ENTITY_TAG)) {
+						EntityStatusData data = EntityStatusData.read(tag.getCompound(ENTITY_TAG));
+						ChunkPos chunkpos = new ChunkPos(data.pos);
+						if (!SCEvents.isChunkForced((ServerWorld) world, chunkpos)) {
+							world.getChunkSource().updateChunkForced(chunkpos, false);
+						}
+
+						tag.put(ENTITY_TAG, EntityStatusData.writeMissingEntity(data));
 					}
-				} else if(tag.contains(ENTITY_TAG)) {
-					EntityStatusData data = EntityStatusData.read(tag.getCompound(ENTITY_TAG));
-					ChunkPos chunkpos = new ChunkPos(data.pos);
-					if (!SCEvents.isChunkForced((ServerWorld) world, chunkpos)) {
-						world.getChunkSource().updateChunkForced(chunkpos, false);
-					}
-					
-					tag.put(ENTITY_TAG, EntityStatusData.writeMissingEntity(data));
-				}
-				
-				if (tag.contains(ROTATIONS_TAG)) {
-					RotationData rotations = RotationData.read(tag.getCompound(ROTATIONS_TAG));
-					
-					double turn;
-					if (tag.contains(ENTITY_TAG)) {
-						double yaw = entity.yRot;
-						yaw = positiveModulo(yaw / 360.0D, 1.0D);
-						double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float)Math.PI * 2F);
-						turn = 0.5D - (yaw - 0.25D - angle);
+
+					if (tag.contains(ROTATIONS_TAG)) {
+						RotationData rotations = RotationData.read(tag.getCompound(ROTATIONS_TAG));
+
+						double turn;
+						if (tag.contains(ENTITY_TAG)) {
+							double yaw = entity.yRot;
+							yaw = positiveModulo(yaw / 360.0D, 1.0D);
+							double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float) Math.PI * 2F);
+							turn = 0.5D - (yaw - 0.25D - angle);
+						} else {
+							turn = Math.random();
+						}
+
+						Pair<Long, double[]> rotationData = this.wobble(world, turn, rotations.lastUpdateTick, rotations.rotation, rotations.rota);
+						rotations = new RotationData(rotationData.getSecond()[0], rotationData.getSecond()[1], rotationData.getFirst());
+
+						tag.put(ROTATIONS_TAG, RotationData.write(rotations));
 					} else {
-						turn = Math.random();
+						RotationData rotations = new RotationData(0.0F, 0.0F, 0L);
+
+						double turn;
+						if (tag.contains(ENTITY_TAG)) {
+							double yaw = entity.yRot;
+							yaw = positiveModulo(yaw / 360.0D, 1.0D);
+							double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float) Math.PI * 2F);
+							turn = 0.5D - (yaw - 0.25D - angle);
+						} else {
+							turn = Math.random();
+						}
+
+						Pair<Long, double[]> rotationData = this.wobble(world, turn, rotations.lastUpdateTick, rotations.rotation, rotations.rota);
+						rotations = new RotationData(rotationData.getSecond()[0], rotationData.getSecond()[1], rotationData.getFirst());
+
+						tag.put(ROTATIONS_TAG, RotationData.write(rotations));
 					}
-					
-					Pair<Long, double[]> rotationData = this.wobble(world, turn, rotations.lastUpdateTick, rotations.rotation, rotations.rota);
-					rotations = new RotationData(rotationData.getSecond()[0], rotationData.getSecond()[1], rotationData.getFirst());
-					
-					tag.put(ROTATIONS_TAG, RotationData.write(rotations));
-				} else {
-					RotationData rotations = new RotationData(0.0F, 0.0F, 0L);
-					
-					double turn;
-					if (tag.contains(ENTITY_TAG)) {
-						double yaw = entity.yRot;
-						yaw = positiveModulo(yaw / 360.0D, 1.0D);
-						double angle = this.getAngleToTrackedEntity(stack, entity) / (double) ((float)Math.PI * 2F);
-						turn = 0.5D - (yaw - 0.25D - angle);
-					} else {
-						turn = Math.random();
-					}
-					
-					Pair<Long, double[]> rotationData = this.wobble(world, turn, rotations.lastUpdateTick, rotations.rotation, rotations.rota);
-					rotations = new RotationData(rotationData.getSecond()[0], rotationData.getSecond()[1], rotationData.getFirst());
-					
-					tag.put(ROTATIONS_TAG, RotationData.write(rotations));
 				}
 			}
 		}
@@ -177,9 +195,9 @@ public class SeekerCompassItem extends Item {
 		CompoundNBT tag = stack.getTag();
 		boolean hasTag = tag != null;
 		if (hasTag && tag.getBoolean(TRACKING_ONLY)) return ActionResult.fail(stack);
-		if (isNotBroken(stack) && hasTag && tag.contains(TRACKING_TAG)) {
+		if (isNotBroken(stack) && hasTag && tag.contains(TRACKING_TAG) && !getTargetEntity(player, 8).isPresent()) {
 			int level = EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.VOODOO.get(), stack);
-			if (level > 0 && !getTargetEntity(player, 8).isPresent()) {
+			if (level > 0) {
 				if (tag.contains(VOODOO_TAG) && getVoodooData(tag).timer > 0 && !player.isCreative()) {
 					if (!world.isClientSide) {
 						player.sendMessage(new TranslationTextComponent("message.seeker_compass.voodoo_cooldown").append((new StringTextComponent(String.valueOf(getVoodooData(tag).timer)).withStyle(TextFormatting.GOLD))), player.getUUID());
@@ -197,7 +215,7 @@ public class SeekerCompassItem extends Item {
 						for (int i = 0; i < 8; i++) {
 							Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, entity.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
 							Vector3d motion = position.subtract(targetPosition.add(0.0F, entity.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
-							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", position.x(), position.y(), position.z(), motion.x(), motion.y(), motion.z()));
+							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new S2CParticleMessage("seeker_compass:seeker_eyes", position.x(), position.y(), position.z(), motion.x(), motion.y(), motion.z()));
 						}
 
 						if (!player.isCreative()) {
@@ -219,7 +237,7 @@ public class SeekerCompassItem extends Item {
 					}
 				}
 				return ActionResult.consume(stack);
-			} else if (EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.WARPING.get(), stack) > 0 && !getTargetEntity(player, 8).isPresent()) {
+			} else if (EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.WARPING.get(), stack) > 0) {
 				if (world instanceof ServerWorld) {
 					Entity entity = this.getEntity((ServerWorld) world, stack);
 
@@ -232,16 +250,28 @@ public class SeekerCompassItem extends Item {
 						if (player.randomTeleport(x, y, z, false)) {
 							player.fallDistance = 0.0F;
 							world.playSound(null, x, y, z, SoundEvents.SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
-							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", player.getX(), player.getY(), player.getZ(), 0.0F, 0.0F, 0.0F));
+							SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new S2CParticleMessage("seeker_compass:seeker_warp", player.getX(), player.getY(), player.getZ(), 0.0F, 0.0F, 0.0F));
 
 							if (!player.isCreative()) {
 								if (player.getRandom().nextFloat() < 0.25F) {
 									stack.shrink(1);
 								}
-								stack.setDamageValue(1200);
+								stack.setDamageValue(stack.getMaxDamage());
 							}
 
 							return ActionResult.success(stack);
+						}
+					}
+				}
+			} else if (EnchantmentHelper.getItemEnchantmentLevel(SCEnchants.STALKING.get(), stack) > 0) {
+				if (world instanceof ServerWorld) {
+					Entity entity = this.getEntity((ServerWorld) world, stack);
+					if (entity instanceof LivingEntity) {
+						Stalker stalker = (Stalker) player;
+						if (stalker.isStalking()) {
+							stalker.setStalkingEntity(null);
+						} else {
+							stalker.setStalkingEntity((LivingEntity) entity);
 						}
 					}
 				}
@@ -265,7 +295,7 @@ public class SeekerCompassItem extends Item {
 				if (trackedEntity instanceof TameableEntity || SCTags.EntityTags.SUMMONABLES.contains(trackedEntity.getType())) {
 					if (((LivingEntity) trackedEntity).randomTeleport(placingPos.getX() + 0.5F, placingPos.getY(), placingPos.getZ() + 0.5F, false)) {
 						world.playSound(null, placingPos.getX(), placingPos.getY(), placingPos.getZ(), SoundEvents.SHULKER_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F);
-						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_warp", trackedEntity.getX(), trackedEntity.getY(), trackedEntity.getZ(), 0.0F, 0.0F, 0.0F));
+						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new S2CParticleMessage("seeker_compass:seeker_warp", trackedEntity.getX(), trackedEntity.getY(), trackedEntity.getZ(), 0.0F, 0.0F, 0.0F));
 
 						if (!player.isCreative()) {
 							int damage = MathHelper.clamp(stack.getDamageValue() + 300, 0, stack.getMaxDamage() - 1);
@@ -306,7 +336,7 @@ public class SeekerCompassItem extends Item {
 									for (int i2 = 0; i2 < 8; i2++) {
 										Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, players.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
 										Vector3d motion = targetPosition.subtract(position.add(0.0F, players.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
-										SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new MessageS2CParticle("seeker_compass:seeker_eyes", targetPosition.x(), targetPosition.y(), targetPosition.z(), motion.x(), motion.y(), motion.z()));
+										SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new S2CParticleMessage("seeker_compass:seeker_eyes", targetPosition.x(), targetPosition.y(), targetPosition.z(), motion.x(), motion.y(), motion.z()));
 									}
 
 									player.level.playSound(null, players.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);

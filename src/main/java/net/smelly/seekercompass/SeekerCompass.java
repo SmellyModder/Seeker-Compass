@@ -38,8 +38,8 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.smelly.seekercompass.enchants.SCEnchants;
-import net.smelly.seekercompass.modification.modifiers.BiasedItemWeightModifier;
-import net.smelly.seekercompass.modification.modifiers.SCLootModifiers;
+import net.smelly.seekercompass.modification.modifiers.*;
+import net.smelly.seekercompass.network.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -71,10 +71,10 @@ public class SeekerCompass {
 	public SeekerCompass() {
 		instance = this;
 
-		CHANNEL.messageBuilder(MessageS2CParticle.class, 0)
-				.encoder(MessageS2CParticle::serialize).decoder(MessageS2CParticle::deserialize)
-				.consumer(MessageS2CParticle::handle)
-				.add();
+		CHANNEL.registerMessage(0, S2CParticleMessage.class, S2CParticleMessage::serialize, S2CParticleMessage::deserialize, S2CParticleMessage::handle);
+		CHANNEL.registerMessage(1, S2CUpdateStalkerMessage.class, S2CUpdateStalkerMessage::serialize, S2CUpdateStalkerMessage::deserialize, S2CUpdateStalkerMessage::handle);
+		CHANNEL.registerMessage(2, C2SStopStalkingMessage.class, C2SStopStalkingMessage::serialize, C2SStopStalkingMessage::deserialize, C2SStopStalkingMessage::handle);
+		CHANNEL.registerMessage(3, S2CUpdateStalkedMessage.class, S2CUpdateStalkedMessage::serialize, S2CUpdateStalkedMessage::deserialize, S2CUpdateStalkedMessage::handle);
 
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ITEMS.register(modEventBus);

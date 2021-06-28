@@ -1,8 +1,8 @@
-package net.smelly.seekercompass;
+package net.smelly.seekercompass.network;
 
 import java.util.function.Supplier;
 
-import net.minecraft.client.Minecraft;
+import com.minecraftabnormals.abnormals_core.client.ClientInfo;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.particles.BasicParticleType;
 import net.minecraft.util.ResourceLocation;
@@ -15,12 +15,12 @@ import net.minecraftforge.registries.ForgeRegistries;
  * Message for telling the client to spawn particles
  * @author - SmellyModder(Luke Tonon)
  */
-public class MessageS2CParticle {
+public final class S2CParticleMessage {
 	private String particleName;
 	private double posX, posY, posZ;
 	private double motionX, motionY, motionZ;
 	
-	public MessageS2CParticle(String particleName, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
+	public S2CParticleMessage(String particleName, double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
 		this.particleName = particleName;
 		this.posX = posX;
 		this.posY = posY;
@@ -40,7 +40,7 @@ public class MessageS2CParticle {
 		buf.writeDouble(this.motionZ);
 	}
 	
-	public static MessageS2CParticle deserialize(PacketBuffer buf) {
+	public static S2CParticleMessage deserialize(PacketBuffer buf) {
 		String particleName = buf.readUtf();
 		double posX = buf.readDouble();
 		double posY = buf.readDouble();
@@ -48,14 +48,14 @@ public class MessageS2CParticle {
 		double motionX = buf.readDouble();
 		double motionY = buf.readDouble();
 		double motionZ = buf.readDouble();
-		return new MessageS2CParticle(particleName, posX, posY, posZ, motionX, motionY, motionZ);
+		return new S2CParticleMessage(particleName, posX, posY, posZ, motionX, motionY, motionZ);
 	}
 	
-	public static boolean handle(MessageS2CParticle message, Supplier<NetworkEvent.Context> ctx) {
+	public static boolean handle(S2CParticleMessage message, Supplier<NetworkEvent.Context> ctx) {
 		NetworkEvent.Context context = ctx.get();
 		if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 			context.enqueueWork(() -> {
-				World world = Minecraft.getInstance().player.level;
+				World world = ClientInfo.getClientPlayer().level;
 				BasicParticleType particleType = (BasicParticleType) ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation(message.particleName));
 				
 				if (particleType != null) {
@@ -63,6 +63,7 @@ public class MessageS2CParticle {
 				}
 			});
 		}
+		context.setPacketHandled(true);
 		return true;
 	}
 }

@@ -1,0 +1,22 @@
+{
+	"required": true,
+	"package": "net.smelly.seekercompass.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"minVersion": "0.8",
+	"refmap": "seeker_compass.refmap.json",
+	"mixins": [
+		"LivingEntityMixin",
+		"PlayerEntityMixin"
+	],
+	"client": [
+		"client.ClientPlayerEntityMixin",
+		"client.EntityRendererInvokerMixin",
+		"client.EntityRendererManagerMixin",
+		"client.GameRendererMixin",
+		"client.LivingEntityMixin",
+		"client.MinecraftMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
