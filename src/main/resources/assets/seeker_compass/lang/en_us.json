@@ -31,5 +31,5 @@
 	"enchantment.seeker_compass.warping.desc": "Teleports to the tracked entity on use.",
 	"enchantment.seeker_compass.summoning.desc": "Teleports the tracked entity to the user on use if summonable.",
 	"enchantment.seeker_compass.voodoo.desc": "Deals remote damage to the tracked entity on use.",
-	"enchantment.seeker_compass.stalking.desc": "See through the eyes of the tracked entity temporarily."
+	"enchantment.seeker_compass.stalking.desc": "See the perspective of the tracked entity at the cost of much faster durability loss."
 }

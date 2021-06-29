@@ -39,12 +39,12 @@ public final class PlayerEntityMixin implements Stalker {
 		if ((Object) this instanceof ServerPlayerEntity) {
 			if (prevEntity instanceof Stalkable) {
 				Stalkable stalkable = (Stalkable) prevEntity;
-				if (stalkable.getStalker() == (Object) this) {
-					stalkable.setStalker(null);
+				if (stalkable.isBeingStalkedBy((PlayerEntity) (Object) this)) {
+					stalkable.removeStalker((PlayerEntity) (Object) this);
 				}
 			}
 			if (nonNull) {
-				((Stalkable) stalkingEntity).setStalker((ServerPlayerEntity) (Object) this);
+				((Stalkable) stalkingEntity).addStalker((ServerPlayerEntity) (Object) this);
 			}
 			this.setShouldBeStalking(nonNull);
 			SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) (Object) this), new S2CUpdateStalkerMessage(stalkingEntity != null ? stalkingEntity.getId() : -1));

@@ -2,11 +2,16 @@ package net.smelly.seekercompass.interfaces;
 
 import net.minecraft.entity.player.PlayerEntity;
 
-import javax.annotation.Nullable;
-
 public interface Stalkable {
-	void setStalker(@Nullable PlayerEntity player);
+	void addStalker(PlayerEntity player);
 
-	@Nullable
-	PlayerEntity getStalker();
+	void removeStalker(PlayerEntity player);
+
+	boolean hasStalkers();
+
+	boolean isBeingStalkedBy(PlayerEntity player);
+
+	void setDirty(boolean dirty);
+
+	boolean isDirty();
 }

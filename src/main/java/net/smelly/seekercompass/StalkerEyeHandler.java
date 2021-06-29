@@ -29,13 +29,8 @@ import net.smelly.seekercompass.mixin.client.EntityRendererInvokerMixin;
 import net.smelly.seekercompass.network.S2CUpdateStalkedMessage;
 import org.lwjgl.opengl.GL11;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 @Mod.EventBusSubscriber(modid = SeekerCompass.MOD_ID)
 public final class StalkerEyeHandler {
-	private static final Map<UUID, PlayerEntity> PREV_STALKERS = new HashMap<>();
 	private static final ResourceLocation STALKER_EYE = new ResourceLocation(SeekerCompass.MOD_ID, "textures/entity/stalker_eye.png");
 
 	@SubscribeEvent
@@ -44,12 +39,9 @@ public final class StalkerEyeHandler {
 			Entity entity = event.getEntity();
 			if (entity instanceof Stalkable) {
 				Stalkable stalkable = (Stalkable) entity;
-				UUID uuid = entity.getUUID();
-				PlayerEntity stalker = stalkable.getStalker();
-				if (PREV_STALKERS.get(uuid) != stalker) {
+				if (stalkable.isDirty()) {
 					PacketDistributor.PacketTarget packetTarget = entity instanceof ServerPlayerEntity ? PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity) : PacketDistributor.TRACKING_ENTITY.with(() -> entity);
-					SeekerCompass.CHANNEL.send(packetTarget, new S2CUpdateStalkedMessage(entity.getId(), stalker != null));
-					PREV_STALKERS.put(uuid, stalker);
+					SeekerCompass.CHANNEL.send(packetTarget, new S2CUpdateStalkedMessage(entity.getId(), stalkable.hasStalkers()));
 				}
 			}
 		}
@@ -61,7 +53,7 @@ public final class StalkerEyeHandler {
 		if (target instanceof LivingEntity) {
 			PlayerEntity player = event.getPlayer();
 			if (player instanceof ServerPlayerEntity) {
-				SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new S2CUpdateStalkedMessage(target.getId(), ((Stalkable) target).getStalker() != null));
+				SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new S2CUpdateStalkedMessage(target.getId(), ((Stalkable) target).hasStalkers()));
 			}
 		}
 	}
