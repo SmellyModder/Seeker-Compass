@@ -9,7 +9,7 @@ license = "https://github.com/SmellyModder/Seeker-Compass/LICENSE.md"
     version="3.0.0"
     displayName="Seeker Compass"
     authors="SmellyModder (Luke Tonon), Five/Paradiscal"
-    description='''A mod that adds a new magical compass capable of tracking living entities'''
+    description='''Adds a new magical compass that has unique enchantments and is capable of tracking living entities.'''
     displayURL=""
 
 [[dependencies.seeker_compass]]
