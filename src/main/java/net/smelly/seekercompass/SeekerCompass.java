@@ -27,8 +27,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
@@ -83,6 +85,16 @@ public class SeekerCompass {
 
 		modEventBus.addListener(this::setupCommon);
 		modEventBus.addListener(this::onGatherData);
+
+		modEventBus.addListener((ModConfig.ModConfigEvent event) -> {
+			ModConfig config = event.getConfig();
+			if (config.getSpec() == SCConfig.CLIENT_SPEC) {
+				SCConfig.CLIENT.load();
+			}
+		});
+
+		ModLoadingContext context = ModLoadingContext.get();
+		context.registerConfig(ModConfig.Type.CLIENT, SCConfig.CLIENT_SPEC);
 
 		DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
 			modEventBus.addListener(EventPriority.LOWEST, this::setupClient);
