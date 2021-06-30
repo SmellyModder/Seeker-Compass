@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import com.minecraftabnormals.abnormals_core.core.util.item.filling.TargetedItemGroupFiller;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.block.Blocks;
@@ -19,10 +20,7 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.*;
@@ -56,6 +54,7 @@ public class SeekerCompassItem extends Item {
 	private static final String ENTITY_TAG = "EntityStatus";
 	private static final String ROTATIONS_TAG = "Rotations";
 	private static final String TRACKING_ONLY = "TrackingOnly";
+	private static final TargetedItemGroupFiller FILLER = new TargetedItemGroupFiller(() -> Items.COMPASS);
 	
 	public SeekerCompassItem(Properties properties) {
 		super(properties);
@@ -349,6 +348,11 @@ public class SeekerCompassItem extends Item {
 			}
 		}
 		return super.useOn(context);
+	}
+
+	@Override
+	public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> stacks) {
+		FILLER.fillItem(this, group, stacks);
 	}
 
 	@Override
