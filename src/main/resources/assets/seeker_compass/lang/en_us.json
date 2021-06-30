@@ -34,5 +34,6 @@
 	"enchantment.seeker_compass.stalking.desc": "See the perspective of the tracked entity at the cost of much faster durability loss.",
 
 	"seeker_compass.config.stalking_eye_procedure": "Stalking Eye Procedure",
-	"seeker_compass.config.enable_stalking_shader": "Enable Stalking Shader"
+	"seeker_compass.config.enable_stalking_shader": "Enable Stalking Shader",
+	"seeker_compass.config.zombified_piglin_compass_chance": "Zombified Piglin Compass Chance"
 }

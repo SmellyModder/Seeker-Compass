@@ -34,7 +34,7 @@ import net.smelly.seekercompass.network.S2CParticleMessage;
  */
 @EventBusSubscriber(modid = SeekerCompass.MOD_ID)
 public final class SCEvents {
-	private static final String TAG_SPAWNED = "seeker_compass:pigman_spawned";
+	private static final String TAG_SPAWNED = "seeker_compass:piglin_spawned";
 	public static final String TAG_CHUNK_UPDATE = "seeker_compass:chunk_update";
 	public static final String TAG_CHUNK_TIMER = "seeker_compass:chunk_timer";
 	private static final String TAG_PREV_CHUNK = "seeker_compass:prev_chunk";
@@ -98,17 +98,19 @@ public final class SCEvents {
 	@SubscribeEvent
 	public static void onEntitySpawned(EntityJoinWorldEvent event) {
 		if (event.getWorld().isClientSide) return;
-		
-		Entity entity = event.getEntity();
-		if (entity instanceof ZombifiedPiglinEntity) {
-			CompoundNBT nbt = entity.getPersistentData();
-			if (!nbt.getBoolean(TAG_SPAWNED)) {
-				ZombifiedPiglinEntity piglin = (ZombifiedPiglinEntity) entity;
-				if (piglin.getItemBySlot(EquipmentSlotType.OFFHAND).isEmpty() && piglin.getRandom().nextFloat() < 0.02F) {
-					piglin.setItemSlot(EquipmentSlotType.OFFHAND, new ItemStack(SeekerCompass.SEEKER_COMPASS.get()));
-					piglin.setDropChance(EquipmentSlotType.OFFHAND, 2.0F);
+		double compassChance = SCConfig.COMMON.zombifiedPiglinCompassChance;
+		if (compassChance > 0.0F) {
+			Entity entity = event.getEntity();
+			if (entity instanceof ZombifiedPiglinEntity) {
+				CompoundNBT nbt = entity.getPersistentData();
+				if (!nbt.getBoolean(TAG_SPAWNED)) {
+					ZombifiedPiglinEntity piglin = (ZombifiedPiglinEntity) entity;
+					if (piglin.getItemBySlot(EquipmentSlotType.OFFHAND).isEmpty() && piglin.getRandom().nextFloat() <= compassChance) {
+						piglin.setItemSlot(EquipmentSlotType.OFFHAND, new ItemStack(SeekerCompass.SEEKER_COMPASS.get()));
+						piglin.setDropChance(EquipmentSlotType.OFFHAND, 2.0F);
+					}
+					nbt.putBoolean(TAG_SPAWNED, true);
 				}
-				nbt.putBoolean(TAG_SPAWNED, true);
 			}
 		}
 	}

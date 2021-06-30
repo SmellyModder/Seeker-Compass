@@ -4,13 +4,37 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 public final class SCConfig {
+	public static final ForgeConfigSpec COMMON_SPEC;
+	public static final Common COMMON;
 	public static final ForgeConfigSpec CLIENT_SPEC;
 	public static final Client CLIENT;
 
 	static {
+		Pair<Common, ForgeConfigSpec> commonSpecPair = new ForgeConfigSpec.Builder().configure(Common::new);
+		COMMON_SPEC = commonSpecPair.getRight();
+		COMMON = commonSpecPair.getLeft();
+
 		Pair<Client, ForgeConfigSpec> clientSpecPair = new ForgeConfigSpec.Builder().configure(Client::new);
 		CLIENT_SPEC = clientSpecPair.getRight();
 		CLIENT = clientSpecPair.getLeft();
+	}
+
+	public static final class Common {
+		private final ForgeConfigSpec.DoubleValue zombifiedPiglinCompassChanceValue;
+		public double zombifiedPiglinCompassChance;
+
+		Common(ForgeConfigSpec.Builder builder) {
+			builder.comment("Common settings for Seeker Compass.").push("common");
+			this.zombifiedPiglinCompassChanceValue = builder
+					.comment("Chance for Zombified Piglins to naturally spawn holding a Seeker Compass. Default: 0.02")
+					.translation(makeTranslation("zombified_piglin_compass_chance"))
+					.defineInRange("zombifiedPiglinCompassChance", 0.02F, 0.0F, 1.0F);
+			builder.pop();
+		}
+
+		public void load() {
+			this.zombifiedPiglinCompassChance = this.zombifiedPiglinCompassChanceValue.get();
+		}
 	}
 
 	public static final class Client {

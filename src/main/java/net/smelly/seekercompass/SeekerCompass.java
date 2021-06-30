@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -87,14 +88,17 @@ public class SeekerCompass {
 		modEventBus.addListener(this::onGatherData);
 
 		modEventBus.addListener((ModConfig.ModConfigEvent event) -> {
-			ModConfig config = event.getConfig();
-			if (config.getSpec() == SCConfig.CLIENT_SPEC) {
+			ForgeConfigSpec spec = event.getConfig().getSpec();
+			if (spec == SCConfig.COMMON_SPEC) {
+				SCConfig.COMMON.load();
+			} else if (spec == SCConfig.CLIENT_SPEC) {
 				SCConfig.CLIENT.load();
 			}
 		});
 
 		ModLoadingContext context = ModLoadingContext.get();
 		context.registerConfig(ModConfig.Type.CLIENT, SCConfig.CLIENT_SPEC);
+		context.registerConfig(ModConfig.Type.COMMON, SCConfig.COMMON_SPEC);
 
 		DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
 			modEventBus.addListener(EventPriority.LOWEST, this::setupClient);
