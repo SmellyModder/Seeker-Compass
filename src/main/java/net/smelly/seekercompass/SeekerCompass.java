@@ -3,13 +3,13 @@ package net.smelly.seekercompass;
 import com.google.gson.Gson;
 import com.minecraftabnormals.abnormals_core.common.loot.modification.LootModifiers;
 import com.minecraftabnormals.abnormals_core.common.loot.modification.modifiers.LootPoolEntriesModifier;
+import com.minecraftabnormals.abnormals_core.core.util.DataUtil;
 import com.minecraftabnormals.abnormals_core.core.util.modification.ConfiguredModifier;
 import com.minecraftabnormals.abnormals_core.core.util.modification.ModifierDataProvider;
 import com.minecraftabnormals.abnormals_core.core.util.modification.TargetedModifier;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.*;
@@ -47,7 +47,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -106,7 +105,9 @@ public class SeekerCompass {
 	}
 
 	private void setupCommon(final FMLCommonSetupEvent event) {
-		ItemGroup.TAB_TOOLS.setEnchantmentCategories(add(ItemGroup.TAB_TOOLS.getEnchantmentCategories(), SCEnchants.SEEKER_COMPASS));
+		event.enqueueWork(() -> {
+			DataUtil.add(ItemGroup.TAB_TOOLS.getEnchantmentCategories(), SCEnchants.SEEKER_COMPASS);
+		});
 	}
 
 	private void onGatherData(GatherDataEvent event) {
@@ -170,14 +171,6 @@ public class SeekerCompass {
 			});
 			ItemModelsProperties.register(SEEKER_COMPASS.get(), new ResourceLocation("broken"), (stack, world, entity) -> SeekerCompassItem.isNotBroken(stack) ? 0.0F : 1.0F);
 		});
-	}
-
-	private static EnchantmentType[] add(EnchantmentType[] array, EnchantmentType element) {
-		int arrayLength = Array.getLength(array);
-		Object newArrayObject = Array.newInstance(array.getClass().getComponentType(), arrayLength + 1);
-		System.arraycopy(array, 0, newArrayObject, 0, arrayLength);
-		array[array.length - 1] = element;
-		return array;
 	}
 
 	private static ModifierDataProvider<LootTableLoadEvent, Gson, Pair<Gson, LootPredicateManager>> createLootModifierDataProvider(DataGenerator dataGenerator) {
