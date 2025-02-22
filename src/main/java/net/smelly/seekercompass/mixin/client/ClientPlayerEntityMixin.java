@@ -1,7 +1,7 @@
 package net.smelly.seekercompass.mixin.client;
 
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.smelly.seekercompass.SeekerCompass;
 import net.smelly.seekercompass.interfaces.Stalker;
 import net.smelly.seekercompass.network.C2SStopStalkingMessage;
@@ -11,14 +11,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ClientPlayerEntity.class)
+@Mixin(LocalPlayer.class)
 public final class ClientPlayerEntityMixin {
-
-	@SuppressWarnings("deprecation")
 	@Inject(at = @At("HEAD"), method = "tick")
 	private void updateStalking(CallbackInfo info) {
 		LivingEntity stalkingEntity = ((Stalker) (Object) this).getStalkingEntity();
-		if (stalkingEntity != null && stalkingEntity.removed) {
+		if (stalkingEntity != null && stalkingEntity.isRemoved()) {
 			SeekerCompass.CHANNEL.sendToServer(new C2SStopStalkingMessage());
 		}
 	}
@@ -29,5 +27,4 @@ public final class ClientPlayerEntityMixin {
 			info.setReturnValue(true);
 		}
 	}
-
 }

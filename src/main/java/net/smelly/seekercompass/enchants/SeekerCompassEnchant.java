@@ -1,7 +1,7 @@
 package net.smelly.seekercompass.enchants;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 /**
  * @author SmellyModder(Luke Tonon)
@@ -9,7 +9,7 @@ import net.minecraft.inventory.EquipmentSlotType;
 public abstract class SeekerCompassEnchant extends Enchantment {
 
 	public SeekerCompassEnchant(Rarity rarityIn) {
-		super(rarityIn, SCEnchants.SEEKER_COMPASS, new EquipmentSlotType[] {EquipmentSlotType.MAINHAND});
+		super(rarityIn, SCEnchants.SEEKER_COMPASS, new EquipmentSlot[] {EquipmentSlot.MAINHAND});
 	}
 	
 	@Override

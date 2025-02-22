@@ -1,8 +1,8 @@
 package net.smelly.seekercompass.advancements;
 
-import com.minecraftabnormals.abnormals_core.common.advancement.EmptyTrigger;
+import com.teamabnormals.blueprint.common.advancement.EmptyTrigger;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.smelly.seekercompass.SeekerCompass;
 

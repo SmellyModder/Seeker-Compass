@@ -1,9 +1,9 @@
 package net.smelly.seekercompass.mixin;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.network.PacketDistributor;
 import net.smelly.seekercompass.SeekerCompass;
 import net.smelly.seekercompass.interfaces.Stalkable;
 import net.smelly.seekercompass.interfaces.Stalker;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public final class PlayerEntityMixin implements Stalker {
 	@Nullable
 	private LivingEntity stalkingEntity;
@@ -23,7 +23,7 @@ public final class PlayerEntityMixin implements Stalker {
 
 	@Inject(at = @At("HEAD"), method = "tick")
 	private void tickStalking(CallbackInfo info) {
-		if ((Object) this instanceof ServerPlayerEntity) {
+		if ((Object) this instanceof ServerPlayer) {
 			if (!this.shouldBeStalking() && this.isStalking()) {
 				this.setStalkingEntity(null);
 			}
@@ -36,18 +36,15 @@ public final class PlayerEntityMixin implements Stalker {
 		LivingEntity prevEntity = this.stalkingEntity;
 		this.stalkingEntity = stalkingEntity;
 		boolean nonNull = stalkingEntity != null;
-		if ((Object) this instanceof ServerPlayerEntity) {
-			if (prevEntity instanceof Stalkable) {
-				Stalkable stalkable = (Stalkable) prevEntity;
-				if (stalkable.isBeingStalkedBy((PlayerEntity) (Object) this)) {
-					stalkable.removeStalker((PlayerEntity) (Object) this);
-				}
+		if ((Object) this instanceof ServerPlayer serverPlayer) {
+			if (prevEntity instanceof Stalkable stalkable && stalkable.isBeingStalkedBy(serverPlayer)) {
+				stalkable.removeStalker(serverPlayer);
 			}
 			if (nonNull) {
-				((Stalkable) stalkingEntity).addStalker((ServerPlayerEntity) (Object) this);
+				((Stalkable) stalkingEntity).addStalker((Player) (Object) this);
 			}
 			this.setShouldBeStalking(nonNull);
-			SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) (Object) this), new S2CUpdateStalkerMessage(stalkingEntity != null ? stalkingEntity.getId() : -1));
+			SeekerCompass.CHANNEL.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new S2CUpdateStalkerMessage(stalkingEntity != null ? stalkingEntity.getId() : -1));
 		}
 	}
 

@@ -1,9 +1,11 @@
 package net.smelly.seekercompass.enchants;
 
+import net.minecraft.world.item.enchantment.Enchantment;
+
 public class PersistenceEnchantment extends SeekerCompassEnchant {
 
 	public PersistenceEnchantment() {
-		super(Rarity.VERY_RARE);
+		super(Enchantment.Rarity.VERY_RARE);
 	}
 	
 	@Override

@@ -1,18 +1,17 @@
 package net.smelly.seekercompass.network;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 import net.smelly.seekercompass.interfaces.Stalker;
 
 import java.util.function.Supplier;
 
 public final class C2SStopStalkingMessage {
 
-	public void serialize(PacketBuffer buf) {}
+	public void serialize(FriendlyByteBuf buf) {}
 
-	public static C2SStopStalkingMessage deserialize(PacketBuffer buf) {
+	public static C2SStopStalkingMessage deserialize(FriendlyByteBuf buf) {
 		return new C2SStopStalkingMessage();
 	}
 
@@ -20,10 +19,7 @@ public final class C2SStopStalkingMessage {
 		NetworkEvent.Context context = ctx.get();
 		if (context.getDirection().getReceptionSide() == LogicalSide.SERVER) {
 			context.enqueueWork(() -> {
-				ServerPlayerEntity sender = context.getSender();
-				if (sender instanceof Stalker) {
-					((Stalker) sender).setStalkingEntity(null);
-				}
+				if (context.getSender() instanceof Stalker stalker) stalker.setStalkingEntity(null);
 			});
 		}
 		context.setPacketHandled(true);

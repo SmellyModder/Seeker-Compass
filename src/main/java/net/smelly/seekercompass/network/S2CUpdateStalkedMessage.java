@@ -1,11 +1,10 @@
 package net.smelly.seekercompass.network;
 
-import com.minecraftabnormals.abnormals_core.client.ClientInfo;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 import net.smelly.seekercompass.interfaces.ClientStalkable;
 
 import java.util.function.Supplier;
@@ -19,12 +18,12 @@ public final class S2CUpdateStalkedMessage {
 		this.beingStalked = beingStalked;
 	}
 
-	public void serialize(PacketBuffer buf) {
+	public void serialize(FriendlyByteBuf buf) {
 		buf.writeInt(this.entityId);
 		buf.writeBoolean(this.beingStalked);
 	}
 
-	public static S2CUpdateStalkedMessage deserialize(PacketBuffer buf) {
+	public static S2CUpdateStalkedMessage deserialize(FriendlyByteBuf buf) {
 		return new S2CUpdateStalkedMessage(buf.readInt(), buf.readBoolean());
 	}
 
@@ -32,8 +31,7 @@ public final class S2CUpdateStalkedMessage {
 		NetworkEvent.Context context = ctx.get();
 		if (context.getDirection().getReceptionSide() == LogicalSide.CLIENT) {
 			context.enqueueWork(() -> {
-				ClientPlayerEntity player = ClientInfo.getClientPlayer();
-				Entity entity = player.level.getEntity(message.entityId);
+				Entity entity = Minecraft.getInstance().player.level().getEntity(message.entityId);
 				if (entity instanceof ClientStalkable) {
 					((ClientStalkable) entity).setBeingStalked(message.beingStalked);
 				}

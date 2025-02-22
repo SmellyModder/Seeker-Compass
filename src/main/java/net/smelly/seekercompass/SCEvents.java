@@ -1,129 +1,104 @@
 package net.smelly.seekercompass;
 
-import java.util.Random;
-import java.util.stream.Stream;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.monster.ZombifiedPiglinEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTUtil;
+import com.teamabnormals.blueprint.core.util.NetworkUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.IWorldInfo;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.smelly.seekercompass.network.S2CParticleMessage;
+import net.smelly.seekercompass.particles.SCParticles;
+
+import java.util.stream.Stream;
 
 /**
- * @author SmellyModder(Luke Tonon)
+ * @author SmellyModder (Luke Tonon)
  */
 @EventBusSubscriber(modid = SeekerCompass.MOD_ID)
 public final class SCEvents {
-	private static final String TAG_SPAWNED = "seeker_compass:piglin_spawned";
 	public static final String TAG_CHUNK_UPDATE = "seeker_compass:chunk_update";
 	public static final String TAG_CHUNK_TIMER = "seeker_compass:chunk_timer";
 	private static final String TAG_PREV_CHUNK = "seeker_compass:prev_chunk";
-	
+
 	@SubscribeEvent
 	public static void trackEntity(PlayerInteractEvent.EntityInteract event) {
-		World level = event.getWorld();
+		Level level = event.getLevel();
 		Entity target = event.getTarget();
-		
+
 		if (level.isClientSide || target == null) return;
-		
-		PlayerEntity player = event.getPlayer();
-		if (target instanceof LivingEntity) {
-			LivingEntity livingEntity = (LivingEntity) target;
+
+		Player player = event.getEntity();
+		if (target instanceof LivingEntity livingEntity) {
 			if (livingEntity.isAlive()) {
-				Hand hand = event.getHand();
+				InteractionHand hand = event.getHand();
 				ItemStack itemstack = player.getItemInHand(hand);
-				
+
 				if (itemstack.getItem() == SeekerCompass.SEEKER_COMPASS.get() && SeekerCompassItem.isNotBroken(itemstack)) {
-					CompoundNBT tag = itemstack.getTag();
+					CompoundTag tag = itemstack.getTag();
 					boolean hasTag = tag != null;
-					if (hasTag && tag.getBoolean("TrackingOnly")) return;
-					if (hasTag && tag.contains("TrackingEntity")) {
-						Entity entity = ((ServerWorld) level).getEntity(NBTUtil.loadUUID(tag.get("TrackingEntity")));
-						
+					if (hasTag && tag.getBoolean(SeekerCompassItem.TRACKING_ONLY)) return;
+					RandomSource rand = player.getRandom();
+					Vec3 targetPosition = target.position();
+					var dimension = level.dimension();
+					if (hasTag && tag.contains(SeekerCompassItem.TRACKING_TAG)) {
+						Entity entity = ((ServerLevel) level).getEntity(tag.getUUID(SeekerCompassItem.TRACKING_TAG));
+
 						if (entity == target) {
-							tag.remove("TrackingEntity");
-							tag.remove("EntityStatus");
-							tag.remove("Rotations");
-							player.level.playSound(null, target.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 1.5F);
-							
-							Random rand = player.getRandom();
-							for (int i = 0; i < 8; i++) {
-								Vector3d targetPosition = target.position();
-								Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
-								Vector3d motion = targetPosition.subtract(position.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
-								
-								SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new S2CParticleMessage("seeker_compass:seeker_eyes", targetPosition.x(), targetPosition.y(), targetPosition.z(), motion.x(), motion.y(), motion.z()));
-							}
+							tag.remove(SeekerCompassItem.TRACKING_TAG);
+							tag.remove(SeekerCompassItem.ENTITY_TAG);
+							player.level().playSound(null, target.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.75F, 1.5F);
+							spawnSeekerParticles(targetPosition, rand, target, dimension, true);
 							return;
 						}
 					}
-					
-					itemstack.getOrCreateTag().put("TrackingEntity", NBTUtil.createUUID(target.getUUID()));
+
+					(tag = itemstack.getOrCreateTag()).put(SeekerCompassItem.TRACKING_TAG, NbtUtils.createUUID(target.getUUID()));
+					tag.putBoolean(SeekerCompassItem.DISABLED_USE_FOR_TICK, true);
+
 					player.awardStat(Stats.ITEM_USED.get(itemstack.getItem()));
 					player.swing(hand);
-					player.level.playSound(null, target.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundCategory.PLAYERS, 0.75F, 0.25F);
-					
-					Random rand = player.getRandom();
-					Vector3d targetPosition = target.position();
-					for (int i = 0; i < 8; i++) {
-						Vector3d position = targetPosition.add(rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F, target.getEyeHeight(), rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat() * 1.25F);
-						Vector3d motion = position.subtract(targetPosition.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(-0.5F);
-						SeekerCompass.CHANNEL.send(PacketDistributor.ALL.with(() -> null), new S2CParticleMessage("seeker_compass:seeker_eyes", position.x(), position.y(), position.z(), motion.x(), motion.y(), motion.z()));
-					}
+					player.level().playSound(null, target.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.75F, 0.25F);
+					spawnSeekerParticles(targetPosition, rand, target, dimension, false);
 				}
 			}
 		}
 	}
-	
+
 	@SubscribeEvent
-	public static void onEntitySpawned(EntityJoinWorldEvent event) {
-		if (event.getWorld().isClientSide) return;
+	public static void onEntitySpawned(MobSpawnEvent.FinalizeSpawn event) {
 		double compassChance = SCConfig.COMMON.zombifiedPiglinCompassChance;
-		if (compassChance > 0.0F) {
-			Entity entity = event.getEntity();
-			if (entity instanceof ZombifiedPiglinEntity) {
-				CompoundNBT nbt = entity.getPersistentData();
-				if (!nbt.getBoolean(TAG_SPAWNED)) {
-					ZombifiedPiglinEntity piglin = (ZombifiedPiglinEntity) entity;
-					if (piglin.getItemBySlot(EquipmentSlotType.OFFHAND).isEmpty() && piglin.getRandom().nextFloat() <= compassChance) {
-						piglin.setItemSlot(EquipmentSlotType.OFFHAND, new ItemStack(SeekerCompass.SEEKER_COMPASS.get()));
-						piglin.setDropChance(EquipmentSlotType.OFFHAND, 2.0F);
-					}
-					nbt.putBoolean(TAG_SPAWNED, true);
-				}
-			}
+		if (compassChance <= 0.0F) return;
+		if (event.getEntity() instanceof ZombifiedPiglin piglin && piglin.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && piglin.getRandom().nextFloat() <= compassChance) {
+			piglin.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(SeekerCompass.SEEKER_COMPASS.get()));
+			piglin.setDropChance(EquipmentSlot.OFFHAND, 2.0F);
 		}
 	}
-	
+
 	@SubscribeEvent
-	public static void onEntityTick(LivingEvent.LivingUpdateEvent event) {
-		LivingEntity entity = event.getEntityLiving();
+	public static void onEntityTick(LivingEvent.LivingTickEvent event) {
+		LivingEntity entity = event.getEntity();
+		if (entity instanceof Player) return;
 		ChunkPos chunkpos = new ChunkPos(entity.blockPosition());
-		CompoundNBT tag = entity.getPersistentData();
-		
-		if (!(entity.level instanceof ServerWorld)) return;
-		ServerWorld level = (ServerWorld) entity.level;
-		
+		CompoundTag tag = entity.getPersistentData();
+		if (!(entity.level() instanceof ServerLevel level)) return;
 		if (tag.contains(TAG_CHUNK_UPDATE) && tag.getBoolean(TAG_CHUNK_UPDATE)) {
 			if (tag.contains(TAG_PREV_CHUNK)) {
 				long prevChunkLong = tag.getLong(TAG_PREV_CHUNK);
@@ -134,7 +109,7 @@ public final class SCEvents {
 					}
 				}
 			}
-			
+
 			if (tag.contains(TAG_CHUNK_TIMER)) {
 				int timer = tag.getInt(TAG_CHUNK_TIMER);
 				if (timer > 0) {
@@ -150,21 +125,23 @@ public final class SCEvents {
 			}
 		}
 	}
-	
+
+	public static void spawnSeekerParticles(Vec3 targetPosition, RandomSource rand, Entity target, ResourceKey<Level> dimension, boolean invert) {
+		for (int i = 0; i < 8; i++) {
+			Vec3 position = targetPosition.add((rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat()) * 1.25F, target.getEyeHeight(), (rand.nextBoolean() ? -rand.nextFloat() : rand.nextFloat()) * 1.25F);
+			Vec3 motion = position.subtract(targetPosition.add(0.0F, target.getEyeHeight() * 0.35F, 0.0F)).scale(invert ? 0.5F : -0.5F);
+			NetworkUtil.spawnParticle(SCParticles.SEEKER_EYES.getId().toString(), dimension, position.x(), position.y(), position.z(), motion.x(), motion.y(), motion.z());
+		}
+	}
+
 	/*
-	 * Checks if the chunk(chunk to be unloaded) is a spawn chunk or forced already by the force chunk command
+	 * Checks if the chunk (chunk to be unloaded) is a spawn chunk or forced already by the force chunk command
 	 */
-	public static boolean isChunkForced(ServerWorld level, ChunkPos pos) {
-		IWorldInfo levelData = level.getLevelData();
+	public static boolean isChunkForced(ServerLevel level, ChunkPos pos) {
+		if (level.getForcedChunks().contains(pos.toLong())) return true;
+		var levelData = level.getLevelData();
 		ChunkPos spawnChunk = new ChunkPos(new BlockPos(levelData.getXSpawn(), 0, levelData.getZSpawn()));
 		Stream<ChunkPos> spawnChunks = ChunkPos.rangeClosed(spawnChunk, 11);
-		
-		for (long values : level.getForcedChunks()) {
-			if (pos.equals(new ChunkPos(ChunkPos.getX(values), ChunkPos.getZ(values)))) {
-				return true;
-			}
-		}
-
 		return spawnChunks.anyMatch(chunk -> chunk.equals(pos));
 	}
 }

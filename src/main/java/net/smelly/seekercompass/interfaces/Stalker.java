@@ -1,7 +1,7 @@
 package net.smelly.seekercompass.interfaces;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 

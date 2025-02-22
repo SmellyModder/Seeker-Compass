@@ -1,0 +1,3 @@
+// 1.20.1	2025-02-22T04:07:34.0517259	Object Modifiers (loot_tables): seeker_compass
+b8ae8ac75cae115c4b3a86d2519fe0dffbc4a72e data/seeker_compass/modifiers/loot_tables/chests/bastion_treasure.json
+c6cd2d57fc439b1d9f1309801cb2f725095d4c92 data/seeker_compass/modifiers/loot_tables/chests/nether_bridge.json

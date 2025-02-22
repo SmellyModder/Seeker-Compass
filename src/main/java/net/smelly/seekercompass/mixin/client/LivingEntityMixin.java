@@ -1,6 +1,6 @@
 package net.smelly.seekercompass.mixin.client;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.smelly.seekercompass.interfaces.ClientStalkable;
 import org.spongepowered.asm.mixin.Mixin;
 

@@ -1,7 +1,7 @@
 package net.smelly.seekercompass.enchants;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.MendingEnchantment;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.MendingEnchantment;
 
 /**
  * @author SmellyModder(Luke Tonon)

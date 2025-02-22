@@ -15,7 +15,7 @@
                     "count": {
                       "type": "minecraft:binomial",
                       "n": 1.0,
-                      "p": 0.25
+                      "p": 0.75
                     },
                     "function": "minecraft:set_count"
                   }
@@ -23,7 +23,7 @@
                 "name": "seeker_compass:seeker_compass"
               }
             ],
-            "name": "seeker_compass:seeker_compass_rare",
+            "name": "seeker_compass:seeker_compass_common",
             "rolls": 1.0
           }
         ],
@@ -32,5 +32,5 @@
     }
   ],
   "priority": "normal",
-  "selector": "minecraft:chests/nether_bridge"
+  "selector": "minecraft:chests/bastion_treasure"
 }

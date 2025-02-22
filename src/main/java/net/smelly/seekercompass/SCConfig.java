@@ -28,7 +28,7 @@ public final class SCConfig {
 			this.zombifiedPiglinCompassChanceValue = builder
 					.comment("Chance for Zombified Piglins to naturally spawn holding a Seeker Compass. Default: 0.02")
 					.translation(makeTranslation("zombified_piglin_compass_chance"))
-					.defineInRange("zombifiedPiglinCompassChance", 0.02F, 0.0F, 1.0F);
+					.defineInRange("zombifiedPiglinCompassChance", 0.005F, 0.0F, 1.0F);
 			builder.pop();
 		}
 

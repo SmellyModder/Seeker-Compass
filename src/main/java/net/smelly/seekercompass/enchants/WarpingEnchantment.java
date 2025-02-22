@@ -1,6 +1,6 @@
 package net.smelly.seekercompass.enchants;
 
-import net.minecraft.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 /**
  * @author SmellyModder(Luke Tonon)

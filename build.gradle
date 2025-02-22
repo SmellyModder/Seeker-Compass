@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath group: "org.spongepowered", name: "mixingradle", version: "0.7-SNAPSHOT"
     }
 }
@@ -23,7 +23,7 @@ version = "${project.minecraft}-${project.modVersion}"
 group = "net.smelly"
 archivesBaseName = project.modId
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
     mappings channel: "official", version: project.minecraft
@@ -81,11 +81,11 @@ sourceSets.main.resources {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft}-${project.forge}"
 
-    implementation fg.deobf("com.minecraftabnormals:abnormals-core:${project.minecraft}-${project.abnormalsCore}")
+    implementation fg.deobf("com.teamabnormals:blueprint:${project.minecraft}-${project.blueprint}")
 }
 
 repositories {
-    maven { url = "https://maven.jaackson.me" }
+    maven { url "https://maven.teamabnormals.com/" }
 }
 
 jar {
