@@ -82,6 +82,8 @@ dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft}-${project.forge}"
 
     implementation fg.deobf("com.teamabnormals:blueprint:${project.minecraft}-${project.blueprint}")
+
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 }
 
 repositories {
