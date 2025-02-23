@@ -4,8 +4,7 @@
         "layer0": "seeker_compass:item/seeker_compass_16"
     },
     "overrides": [
-    	{ "predicate": { "angle": 0.000000, "broken": 0.0 }, "model": "seeker_compass:item/seeker_compass" },
-        { "predicate": { "angle": 0.000000, "broken": 1.0 }, "model": "seeker_compass:item/seeker_compass_broken" },
+    	{ "predicate": { "angle": 0.000000 }, "model": "seeker_compass:item/seeker_compass" },
         { "predicate": { "angle": 0.015625 }, "model": "seeker_compass:item/seeker_compass_17" },
         { "predicate": { "angle": 0.046875 }, "model": "seeker_compass:item/seeker_compass_18" },
         { "predicate": { "angle": 0.078125 }, "model": "seeker_compass:item/seeker_compass_19" },
@@ -37,6 +36,7 @@
         { "predicate": { "angle": 0.890625 }, "model": "seeker_compass:item/seeker_compass_13" },
         { "predicate": { "angle": 0.921875 }, "model": "seeker_compass:item/seeker_compass_14" },
         { "predicate": { "angle": 0.953125 }, "model": "seeker_compass:item/seeker_compass_15" },
-        { "predicate": { "angle": 0.984375 }, "model": "seeker_compass:item/seeker_compass" }
+        { "predicate": { "angle": 0.984375}, "model": "seeker_compass:item/seeker_compass" },
+        { "predicate": { "broken": 1.0 }, "model": "seeker_compass:item/seeker_compass_broken" }
     ]
 }
